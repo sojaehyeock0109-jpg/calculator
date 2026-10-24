@@ -18,16 +18,25 @@ function json(data, status = 200, cors = {}, extraHeaders = {}) {
   });
 }
 
+// Markdown 강조 표시만 제거하고 LaTeX 수식은 보존합니다.
+function cleanFormatting(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/gs, "$1")
+    .replace(/__(.*?)__/gs, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/Readable text and formulas used\?.*/gi, "")
+    .replace(/Safety validation note included\?.*/gi, "")
+    .replace(/Final Output Generation:.*/gi, "")
+    .trim();
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const origin = request.headers.get("Origin");
 
-    // 서버 상태 확인
     if (request.method === "GET" && url.pathname === "/") {
-      return new Response("Engineering Calculator API is running.", {
-        headers: { "Cache-Control": "no-store" }
-      });
+      return new Response("Engineering Calculator API is running.");
     }
 
     const cors = {
@@ -38,7 +47,6 @@ export default {
       "Vary": "Origin"
     };
 
-    // 브라우저에서 허용할 사이트 출처 확인
     if (origin !== ALLOWED_ORIGIN) {
       return json(
         { error: "허용되지 않은 요청 출처입니다." },
@@ -47,10 +55,7 @@ export default {
     }
 
     if (request.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: cors
-      });
+      return new Response(null, { status: 204, headers: cors });
     }
 
     if (url.pathname !== "/api/solve") {
@@ -70,19 +75,18 @@ export default {
       );
     }
 
-    // Worker에 요청 제한 바인딩이 등록되어 있는지 확인
+    // IP별 분당 요청 제한
     if (
       !env.AI_RATE_LIMITER ||
       typeof env.AI_RATE_LIMITER.limit !== "function"
     ) {
       return json(
-        { error: "요청 제한 설정이 없습니다. Worker 배포 설정을 확인해 주세요." },
+        { error: "요청 제한 설정을 확인해 주세요." },
         503,
         cors
       );
     }
 
-    // IP별 요청 제한: 분당 최대 8회
     const clientIp =
       request.headers.get("CF-Connecting-IP") || "unknown";
 
@@ -93,37 +97,31 @@ export default {
 
       if (!success) {
         return json(
-          {
-            error:
-              "요청이 너무 많습니다. 60초 후 다시 시도해 주세요."
-          },
+          { error: "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요." },
           429,
           cors,
           { "Retry-After": "60" }
         );
       }
-    } catch (error) {
-      // 제한 장치가 작동하지 않으면 AI 요청을 허용하지 않음
+    } catch {
       return json(
-        { error: "요청 제한 기능을 확인할 수 없습니다. 잠시 후 다시 시도해 주세요." },
+        { error: "요청 제한 기능을 확인할 수 없습니다." },
         503,
         cors
       );
     }
 
-    // JSON만 허용
     const contentType =
       request.headers.get("Content-Type") || "";
 
     if (!contentType.toLowerCase().startsWith("application/json")) {
       return json(
-        { error: "JSON 형식의 요청만 허용합니다." },
+        { error: "JSON 요청만 허용합니다." },
         415,
         cors
       );
     }
 
-    // Content-Length 사전 검사
     const contentLength = Number(
       request.headers.get("Content-Length") || "0"
     );
@@ -144,7 +142,6 @@ export default {
     try {
       const rawBody = await request.text();
 
-      // Content-Length가 없거나 부정확한 경우도 검사
       if (rawBody.length > MAX_BODY_LENGTH) {
         return json(
           { error: "요청 본문은 5000자 이하여야 합니다." },
@@ -154,7 +151,7 @@ export default {
       }
 
       body = JSON.parse(rawBody);
-    } catch (error) {
+    } catch {
       return json(
         { error: "올바른 JSON 형식으로 요청해 주세요." },
         400,
@@ -162,7 +159,6 @@ export default {
       );
     }
 
-    // 입력값 자료형과 길이 검증
     if (
       !body ||
       typeof body !== "object" ||
@@ -178,32 +174,22 @@ export default {
 
     const question = body.question.trim();
 
-    if (!question) {
+    if (!question || question.length > MAX_QUESTION_LENGTH) {
       return json(
-        { error: "질문을 입력해 주세요." },
+        { error: "질문은 1~1500자로 입력해 주세요." },
         400,
         cors
       );
     }
 
-    if (question.length > MAX_QUESTION_LENGTH) {
-      return json(
-        { error: "질문은 최대 1500자까지 입력할 수 있습니다." },
-        400,
-        cors
-      );
-    }
-
-    // 예상하지 못한 제어 문자 차단
     if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(question)) {
       return json(
-        { error: "질문에 허용되지 않는 제어 문자가 있습니다." },
+        { error: "허용되지 않는 제어 문자가 있습니다." },
         400,
         cors
       );
     }
 
-    // Gemini Secret 확인
     if (!env.GEMINI_API_KEY) {
       return json(
         { error: "Gemini API 키 설정을 확인해 주세요." },
@@ -213,32 +199,33 @@ export default {
     }
 
     const systemPrompt = `
-너는 한국어 공학 계산기다.
+너는 간결하고 정확한 범용 공학 계산기다.
 
-사용자가 요구한 공학 계산의 공식, 값 대입, 최종 결과만
-간결하게 제공한다.
+수학, 재료역학, 정역학, 동역학, 진동학, 열역학,
+유체역학, 전기공학, 제어공학 등 공학 계산 문제를 처리한다.
 
-답변 규칙:
-1. 필요한 공식과 주어진 값을 확인한다.
-2. 값이 충분하면 공식을 선택해 숫자를 대입한다.
-3. 계산 결과와 단위를 표시한다.
-4. 답변은 다음 세 항목으로 제한한다.
+답변은 다음 세 항목만 사용한다.
 
-**공식**
-적용 공식
+공식:
+적용한 공식
 
-**대입**
-숫자를 넣은 수식
+대입:
+주어진 숫자와 단위를 넣은 식
 
-**결과**
-최종 결과와 단위
+결과:
+최종 계산 결과와 단위
 
-5. 긴 설명, 인사말, 추가 팁, 자체 점검 문구는 출력하지 않는다.
-6. 수식은 MathJax가 표시할 수 있는 LaTeX로 작성한다.
-7. 필요한 값이 없거나 질문이 모호하면 추측하지 말고
-   필요한 값만 짧게 질문한다.
-8. 단위 변환과 계산 과정을 확인하고 결과를 검증한다.
-9. 공식을 확신할 수 없으면 임의로 만들어 내지 않는다.
+출력 규칙:
+- "공식:", "대입:", "결과:"라는 일반 텍스트 제목을 사용한다.
+- ** 또는 __ 같은 Markdown 강조 기호를 사용하지 않는다.
+- 인사말, 긴 설명, 요약, 추가 팁을 쓰지 않는다.
+- 수식은 MathJax가 표시할 수 있는 LaTeX로 작성한다.
+- LaTeX 수식의 달러 기호와 백슬래시를 임의로 제거하지 않는다.
+- 문제에 필요한 값이 부족하면 결과를 추측하지 말고 필요한 값만 질문한다.
+- 공식이 불확실하면 임의로 공식을 만들어 내지 않는다.
+- 단위 변환과 계산 결과를 검토한다.
+- 내부 점검 목록이나 자기 평가 문구를 출력하지 않는다.
+- 지원 여부를 확신할 수 없는 문제는 솔직하게 알린다.
     `.trim();
 
     try {
@@ -260,7 +247,7 @@ export default {
             }],
             generationConfig: {
               temperature: 0.1,
-              maxOutputTokens: 350,
+              maxOutputTokens: 450,
               thinkingConfig: {
                 includeThoughts: false,
                 thinkingLevel: "low"
@@ -271,28 +258,22 @@ export default {
       );
 
       if (!response.ok) {
-        if (response.status === 429) {
-          return json(
-            { error: "AI 이용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요." },
-            429,
-            cors,
-            { "Retry-After": "60" }
-          );
-        }
-
         return json(
-          { error: "AI 응답을 받지 못했습니다. API 설정이나 이용 한도를 확인해 주세요." },
-          502,
-          cors
+          {
+            error: response.status === 429
+              ? "AI 이용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요."
+              : "AI 응답에 실패했습니다. 서버 설정과 API 이용 가능 여부를 확인해 주세요."
+          },
+          response.status === 429 ? 429 : 502,
+          cors,
+          response.status === 429 ? { "Retry-After": "60" } : {}
         );
       }
 
       const data = await response.json();
+      const parts = data.candidates?.[0]?.content?.parts || [];
 
-      const parts =
-        data.candidates?.[0]?.content?.parts || [];
-
-      const answer = parts
+      const rawAnswer = parts
         .filter(part =>
           part &&
           !part.thought &&
@@ -302,20 +283,19 @@ export default {
         .join("\n")
         .trim();
 
-      if (!answer) {
+      if (!rawAnswer) {
         return json(
-          { error: "AI가 결과를 반환하지 않았습니다. 다시 시도해 주세요." },
+          { error: "AI가 답변을 반환하지 않았습니다." },
           502,
           cors
         );
       }
 
-      // 내부 점검 목록 등이 답변에 섞여 나오는 경우 차단
-      if (
-        /Readable text and formulas used\?|Safety validation note included\?|Final Output Generation:/i.test(answer)
-      ) {
+      const answer = cleanFormatting(rawAnswer);
+
+      if (!answer) {
         return json(
-          { error: "AI 답변 형식이 올바르지 않습니다. 다시 시도해 주세요." },
+          { error: "표시할 답변이 없습니다. 다시 시도해 주세요." },
           502,
           cors
         );
@@ -323,9 +303,9 @@ export default {
 
       return json({ answer }, 200, cors);
 
-    } catch (error) {
+    } catch {
       return json(
-        { error: "요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요." },
+        { error: "요청 처리 중 오류가 발생했습니다. 다시 시도해 주세요." },
         502,
         cors
       );
