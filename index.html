@@ -120,6 +120,12 @@ function prepareExpression(raw) {
     "($2/$1)"
   );
 
+    // "2의 3제곱"을 2^3으로 변환
+  s = s.replace(
+    /(\d+(?:\.\d+)?)\s*의\s*(\d+(?:\.\d+)?)\s*제곱/g,
+    "($1^$2)"
+  );
+
   // 긴 표현을 먼저 바꿉니다.
   const replacements = [
     ["자연로그", "ln"],
