@@ -3,236 +3,882 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공학 계산기 AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공학 계산기</title>
 
-  <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [["$", "$"], ["\\(", "\\)"]],
-        displayMath: [["$$", "$$"], ["\\[", "\\]"]],
-        processEscapes: true
-      },
-      options: {
-        skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
-      }
-    };
-  </script>
-  <script
-    id="MathJax-script"
-    async
-    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
-  </script>
+<!-- 브라우저에서 실행되는 수학 계산 및 방정식 풀이 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Solve.js"></script>
+
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [["$", "$"], ["\\(", "\\)"]],
+    displayMath: [["$$", "$$"], ["\\[", "\\]"]]
+  }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
 <style>
 * { box-sizing: border-box; }
 
-@@ -47,7 +67,6 @@
-
-button:hover { background: #1d4ed8; }
-button:disabled { opacity: 0.6; cursor: wait; }
-
-.ai-button { background: #6d28d9; }
-.ai-button:hover { background: #5b21b6; }
-
-@@ -64,14 +83,18 @@
-background: #eff6ff;
-border-radius: 12px;
-overflow-wrap: anywhere;
-      white-space: pre-wrap;
+:root {
+  --bg: #f2f5fb;
+  --blue: #2563eb;
+  --border: #dbe3ee;
+  --muted: #64748b;
+  --text: #172033;
 }
 
-#answer {
-      font-size: 20px;
-      line-height: 1.8;
-      font-size: 17px;
-      line-height: 1.9;
-overflow-wrap: anywhere;
-      white-space: pre-wrap;
-    }
-
-    #answer mjx-container {
-      max-width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
+body {
+  margin: 0;
+  padding: 22px;
+  font-family: Arial, "Malgun Gothic", sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
-#formula { color: #475569; overflow-wrap: anywhere; }
-@@ -92,10 +115,9 @@ <h1>공학 계산기 AI</h1>
-<form id="calcForm">
-<input
-id="expression"
-      placeholder="예: 2의3제곱 또는 전압 12V, 저항 4옴일 때 전류"
-      placeholder="예: 2의3제곱 또는 RLC 회로의 공진 주파수를 설명해 줘."
-autocomplete="off"
->
+.layout {
+  width: 100%;
+  max-width: 1450px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: minmax(300px, 0.9fr) minmax(360px, 1.1fr);
+  gap: 22px;
+  align-items: start;
+}
 
-<button type="submit">수식 계산하기</button>
-<button type="button" class="ai-button" id="aiButton">
-AI로 공학 문제 풀이
-@@ -124,7 +146,6 @@ <h1>공학 계산기 AI</h1>
-</main>
+.panel {
+  min-width: 0;
+  padding: 24px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 5px 24px #1720330c;
+}
+
+h1 { font-size: 25px; margin: 0 0 10px; }
+p { line-height: 1.65; }
+
+.muted {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+input, textarea, button { font: inherit; }
+
+input, textarea {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  color: var(--text);
+  background: white;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+button {
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+button:disabled { opacity: .6; cursor: wait; }
+
+.primary { color: white; background: var(--blue); }
+.secondary { color: #334155; background: #e9eef6; }
+
+.editor {
+  min-height: 185px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+#mathInput {
+  min-height: 160px;
+  padding: 10px;
+  border: 0;
+  outline: none;
+  resize: vertical;
+  box-shadow: none;
+  font-size: 21px;
+  line-height: 1.7;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.keyboard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 20px 0 12px;
+}
+
+.tabs, .angles { display: flex; gap: 5px; }
+
+.tab, .angle {
+  padding: 8px 11px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.tab.active { background: #eaf1ff; color: var(--blue); }
+.angle.active { background: #475569; color: white; }
+
+.key-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.key {
+  min-width: 0;
+  min-height: 43px;
+  padding: 7px 2px;
+  background: #edf1f7;
+  border: 1px solid #dce3ed;
+  color: #1e293b;
+}
+
+.key.operator { color: #1d4ed8; background: #e8f0ff; }
+.key.func { color: #6d28d9; background: #f1eafe; }
+
+.key-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hint {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+/* 오른쪽 계산 채팅 */
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 410px;
+  overflow-y: auto;
+  padding: 14px;
+  margin: 18px 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 94%;
+}
+
+.message.user { align-self: flex-end; }
+.message.assistant { align-self: flex-start; }
+
+.message-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.bubble {
+  padding: 12px 14px;
+  border-radius: 13px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.message.user .bubble {
+  color: white;
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.message.assistant .bubble {
+  background: #eef5ff;
+}
+
+.bubble mjx-container {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+#chatForm {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+#chatInput {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  max-height: 130px;
+  resize: vertical;
+}
+
+#sendButton { flex-shrink: 0; }
+
+.examples {
+  margin-top: 17px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+.example {
+  display: block;
+  padding: 3px 0;
+  color: #526581;
+  background: transparent;
+  text-align: left;
+}
+
+.example:hover { color: var(--blue); text-decoration: underline; }
+
+@media (max-width: 950px) {
+  body { padding: 12px; }
+  .layout { grid-template-columns: 1fr; }
+  .panel { padding: 18px; }
+}
+
+@media (max-width: 450px) {
+  .key-grid { gap: 5px; }
+  .key { min-height: 39px; font-size: 14px; }
+  #chatForm { flex-direction: column; }
+  #sendButton { width: 100%; }
+}
+</style>
+</head>
+
+<body>
+<div class="layout">
+
+  <!-- 왼쪽: 수식 키패드 -->
+  <section class="panel">
+    <h1>수식 입력기</h1>
+    <p class="muted">수식을 입력하거나 아래 키패드를 사용하세요.</p>
+
+    <div class="editor">
+      <textarea id="mathInput"
+        placeholder="예: sqrt(16) + 3^2&#10;또는 x^2 + 4 = 16"
+        aria-label="수식 입력"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="calculateLeft" type="button">수식 계산하기</button>
+    </div>
+
+    <div class="keyboard-head">
+      <div class="tabs">
+        <button class="tab active" data-tab="main" type="button">주요</button>
+        <button class="tab" data-tab="letters" type="button">문자</button>
+        <button class="tab" data-tab="functions" type="button">함수</button>
+      </div>
+      <div class="angles">
+        <button class="angle active" id="degButton" type="button">DEG</button>
+        <button class="angle" id="radButton" type="button">RAD</button>
+      </div>
+    </div>
+
+    <div id="keyGrid" class="key-grid"></div>
+
+    <div class="key-footer">
+      <button class="secondary" id="backspaceButton" type="button">⌫ 지우기</button>
+      <button class="secondary" id="clearButton" type="button">AC 전체 지우기</button>
+    </div>
+
+    <div class="hint">
+      <strong>지원 예시</strong><br>
+      <code>2 + 3 * 5</code><br>
+      <code>sqrt(16)</code><br>
+      <code>x^2 + 4 = 16</code><br>
+      <code>2*x + 3 = 7</code><br><br>
+      방정식은 해를 기호식으로 표시하고, 가능한 경우 소수 근삿값도 함께 보여 줍니다.
+    </div>
+  </section>
+
+  <!-- 오른쪽: AI 없이 작동하는 수식 계산 채팅 -->
+  <section class="panel">
+    <h1>계산 채팅</h1>
+    <p class="muted">수식이나 간단한 자연어 수학 표현을 입력하세요. 계산은 이 브라우저에서 수행됩니다.</p>
+
+    <div id="chatLog" class="chat-log" aria-live="polite">
+      <div class="message assistant">
+        <div class="message-label">계산기</div>
+        <div class="bubble">안녕하세요! 수식이나 방정식을 입력하면 계산 결과를 보여 드립니다.
+
+예: 3의 제곱 더하기 2
+예: x^2 + 4 = 16</div>
+      </div>
+    </div>
+
+    <form id="chatForm">
+      <textarea id="chatInput"
+        rows="2"
+        placeholder="수식 입력… 예: x제곱 더하기 4 = 16"
+        aria-label="계산 입력"></textarea>
+      <button class="primary" id="sendButton" type="submit">계산</button>
+    </form>
+
+    <div class="examples">
+      <strong>빠른 입력</strong>
+      <button class="example" data-example="루트 16" type="button">루트 16</button>
+      <button class="example" data-example="3의 제곱 더하기 2" type="button">3의 제곱 더하기 2</button>
+      <button class="example" data-example="2의3제곱" type="button">2의3제곱</button>
+      <button class="example" data-example="사인 30도 더하기 코사인 60도" type="button">사인 30도 더하기 코사인 60도</button>
+      <button class="example" data-example="x제곱 더하기 4 = 16" type="button">x제곱 더하기 4 = 16</button>
+      <button class="example" data-example="2*x + 3 = 7" type="button">2*x + 3 = 7</button>
+    </div>
+
+    <div class="hint">
+      AI API를 호출하지 않습니다. 계산기에 등록되지 않은 임의의 공학 문장을 이해하는 기능은 포함하지 않습니다.
+    </div>
+  </section>
+
+</div>
 
 <script>
-// Cloudflare Worker의 AI API 주소
-const AI_API_URL =
-"https://calculator.sojaehyeock0109.workers.dev/api/solve";
+const mathInput = document.getElementById("mathInput");
+const chatInput = document.getElementById("chatInput");
+const chatForm = document.getElementById("chatForm");
+const chatLog = document.getElementById("chatLog");
+const keyGrid = document.getElementById("keyGrid");
 
-@@ -135,7 +156,6 @@ <h1>공학 계산기 AI</h1>
-const answerText = document.getElementById("answer");
-const aiButton = document.getElementById("aiButton");
+let angleMode = "deg";
 
-// 한국어 수학 표현을 수식으로 변환
-function prepareExpression(raw) {
-if (raw.length > 300) {
-throw new Error("수식은 300자 이하로 입력해 주세요.");
-@@ -146,19 +166,19 @@ <h1>공학 계산기 AI</h1>
-.replace(/÷/g, "/")
-.replace(/[−–]/g, "-");
+const knownFunctions = new Set([
+  "sqrt", "sin", "cos", "tan", "log", "ln", "abs",
+  "pi", "e"
+]);
 
-  // "2의3제곱" -> (2^3)
-  // 2의3제곱 -> (2^3)
-s = s.replace(
-/(\d+(?:\.\d+)?)\s*의\s*(\d+(?:\.\d+)?)\s*제곱/g,
-"($1^$2)"
-);
-
-  // "2의세제곱" -> (2^3)
-  // 2의세제곱 -> (2^3)
-s = s.replace(
-/(\d+(?:\.\d+)?)\s*의\s*세제곱/g,
-"($1^3)"
-);
-
-  // "2분의3" -> (3/2)
-  // 2분의3 -> (3/2)
-s = s.replace(
-/(\d+(?:\.\d*)?|\.\d+)\s*분의\s*(\d+(?:\.\d*)?|\.\d+)/g,
-"($2/$1)"
-@@ -192,7 +212,6 @@ <h1>공학 계산기 AI</h1>
-return s.trim();
+function formatNumber(value) {
+  if (!Number.isFinite(value)) throw new Error("유효한 숫자 결과가 아닙니다.");
+  if (Math.abs(value) < 1e-12) return "0";
+  return Number(value.toPrecision(10)).toString();
 }
 
-// 수식 토큰 분리
-function tokenize(s) {
-const tokens = [];
-let i = 0;
-@@ -235,7 +254,6 @@ <h1>공학 계산기 AI</h1>
-return tokens;
+/* 한국어 수식과 간단한 수학 표현을 표준 수식으로 변환 */
+function normalizeExpression(raw) {
+  if (raw.length > 300) throw new Error("수식은 300자 이하여야 합니다.");
+
+  let s = raw.trim().toLowerCase()
+    .replace(/×/g, "*")
+    .replace(/÷/g, "/")
+    .replace(/[−–]/g, "-")
+    .replace(/²/g, "^2")
+    .replace(/³/g, "^3");
+
+  // 군더더기 문구 제거
+  const fillers = [
+    /계산해\s*주세요/g, /계산해\s*줘/g, /계산해주세요/g,
+    /계산해줘/g, /구해\s*주세요/g, /구해\s*줘/g,
+    /구해주세요/g, /구해줘/g, /풀어\s*주세요/g,
+    /풀어\s*줘/g, /풀어주세요/g, /풀어줘/g,
+    /계산해/g, /값을/g, /결과를/g, /답을/g
+  ];
+
+  for (const pattern of fillers) s = s.replace(pattern, "");
+
+  // 2의3제곱, 2의 3제곱
+  s = s.replace(
+    /(\d+(?:\.\d+)?)\s*의\s*(\d+(?:\.\d+)?)\s*제곱/g,
+    "($1^$2)"
+  );
+
+  // 2의세제곱
+  s = s.replace(
+    /(\d+(?:\.\d+)?)\s*의\s*세제곱/g,
+    "($1^3)"
+  );
+
+  // 3의 제곱
+  s = s.replace(
+    /(\d+(?:\.\d+)?)\s*의\s*제곱/g,
+    "($1^2)"
+  );
+
+  // 2분의3 = 3/2
+  s = s.replace(
+    /(\d+(?:\.\d*)?|\.\d+)\s*분의\s*(\d+(?:\.\d*)?|\.\d+)/g,
+    "($2/$1)"
+  );
+
+  const replacements = [
+    ["자연로그", "ln"],
+    ["제곱근", "sqrt"],
+    ["코사인", "cos"],
+    ["탄젠트", "tan"],
+    ["사인", "sin"],
+    ["세제곱", "^3"],
+    ["제곱", "^2"],
+    ["루트", "sqrt"],
+    ["로그", "log"],
+    ["파이", "pi"],
+    ["더하기", "+"],
+    ["플러스", "+"],
+    ["빼기", "-"],
+    ["마이너스", "-"],
+    ["곱하기", "*"],
+    ["나누기", "/"],
+    ["의", ""],
+    ["도", ""]
+  ];
+
+  for (const [word, replacement] of replacements) {
+    s = s.split(word).join(replacement);
+  }
+
+  // "sqrt 16", "sin 30"을 함수 괄호로 변환
+  s = s.replace(
+    /\b(sqrt|sin|cos|tan|log|ln|abs)\s+([+-]?\d+(?:\.\d+)?)/g,
+    "$1($2)"
+  );
+
+  return s.trim();
 }
 
-// 수식 계산: 입력을 JavaScript 코드로 직접 실행하지 않습니다.
-function calculateExpression(tokens) {
-let pos = 0;
+/* 허용된 문자와 함수만 수치 계산에 사용 */
+function validateExpression(expression, allowVariable = false) {
+  if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(expression)) {
+    throw new Error("수식이 아닌 문자가 포함되어 있습니다. 수식으로 입력해 주세요.");
+  }
 
-@@ -319,9 +337,7 @@ <h1>공학 계산기 AI</h1>
-if (name === "pi") return Math.PI;
-if (name === "e") return Math.E;
+  const identifiers =
+    expression.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
 
-      const allowed = ["sqrt", "sin", "cos", "tan", "log", "ln"];
+  const variables = identifiers.filter(name => !knownFunctions.has(name));
 
-      if (!allowed.includes(name)) {
-      if (!["sqrt", "sin", "cos", "tan", "log", "ln"].includes(name)) {
-throw new Error("지원하지 않는 함수: " + name);
+  if (!allowVariable && variables.length > 0) {
+    throw new Error("미지수가 포함되어 있습니다. 방정식이라면 = 기호를 입력해 주세요.");
+  }
+
+  return [...new Set(variables)];
 }
 
-@@ -348,10 +364,8 @@ <h1>공학 계산기 AI</h1>
-return Math.log10(a);
-}
+function prepareTrig(expression) {
+  if (angleMode !== "deg") return expression;
 
-      if (name === "ln") {
-        if (a <= 0) throw new Error("자연로그의 입력값은 0보다 커야 합니다.");
-        return Math.log(a);
+  return expression.replace(
+    /\b(sin|cos|tan)\(([^()]*)\)/g,
+    (all, fn, argument) => {
+      if (/^[0-9.+\-*/\s]+$/.test(argument)) {
+        return `${fn}((${argument})*pi/180)`;
       }
-      if (a <= 0) throw new Error("자연로그의 입력값은 0보다 커야 합니다.");
-      return Math.log(a);
+      return all;
+    }
+  );
 }
 
-throw new Error("수식의 순서를 확인해 주세요.");
-@@ -370,7 +384,6 @@ <h1>공학 계산기 AI</h1>
-return result;
+function evaluateNumeric(raw) {
+  let expression = normalizeExpression(raw);
+
+  if (!expression) throw new Error("수식을 입력해 주세요.");
+  if (expression.includes("=")) throw new Error("방정식은 등호를 포함해 입력해 주세요.");
+
+  expression = prepareTrig(expression);
+  validateExpression(expression);
+
+  let evaluated;
+
+  try {
+    evaluated = window.nerdamer(expression).evaluate().text("decimals");
+  } catch {
+    throw new Error("수식을 계산하지 못했습니다. 연산자와 괄호를 확인해 주세요.");
+  }
+
+  const value = Number(evaluated);
+
+  return {
+    expression,
+    value: formatNumber(value)
+  };
 }
 
-// 일반 수식 계산 버튼
-form.addEventListener("submit", function(event) {
-event.preventDefault();
+function splitSolutions(text) {
+  let s = String(text).trim();
 
-@@ -379,8 +392,7 @@ <h1>공학 계산기 AI</h1>
-if (!original) throw new Error("수식을 입력해 주세요.");
+  if (
+    (s.startsWith("[") && s.endsWith("]")) ||
+    (s.startsWith("{") && s.endsWith("}"))
+  ) {
+    s = s.slice(1, -1);
+  }
 
-const normalized = prepareExpression(original);
-    const tokens = tokenize(normalized);
-    const value = calculateExpression(tokens);
-    const value = calculateExpression(tokenize(normalized));
+  const parts = [];
+  let current = "";
+  let depth = 0;
 
-statusText.textContent = "계산 완료";
-formulaText.textContent = "변환한 수식: " + normalized;
-@@ -394,7 +406,22 @@ <h1>공학 계산기 AI</h1>
+  for (const ch of s) {
+    if ("([{".includes(ch)) depth++;
+    if (")] }".replace(/ /g, "").includes(ch)) depth--;
+
+    if (ch === "," && depth === 0) {
+      if (current.trim()) parts.push(current.trim());
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+
+  if (current.trim()) parts.push(current.trim());
+  return parts;
 }
-});
 
-// AI 공학 문제 풀이 버튼
-async function typesetAnswer() {
-  const started = Date.now();
+function solveEquation(raw) {
+  const expression = normalizeExpression(raw);
 
-  // MathJax 스크립트가 로드될 때까지 잠깐 기다립니다.
+  if ((expression.match(/=/g) || []).length !== 1) {
+    throw new Error("등호가 하나인 방정식만 지원합니다.");
+  }
+
+  const [left, right] = expression.split("=").map(part => part.trim());
+
+  if (!left || !right) {
+    throw new Error("등호 양쪽에 식을 입력해 주세요.");
+  }
+
+  const variables = validateExpression(left + "+" + right, true);
+
+  if (variables.length !== 1) {
+    throw new Error(
+      variables.length === 0
+        ? "방정식에서 미지수를 찾지 못했습니다."
+        : "현재는 미지수가 하나인 방정식만 지원합니다."
+    );
+  }
+
+  const variable = variables[0];
+  let solution;
+
+  try {
+    // Nerdamer 1.x의 방정식 솔버를 사용합니다.
+    solution = window.nerdamer.solveEquations(
+      `${left}=${right}`,
+      variable
+    );
+  } catch {
+    throw new Error("이 방정식은 현재 풀이 엔진에서 처리하지 못했습니다.");
+  }
+
+  let roots;
+
+  if (Array.isArray(solution)) {
+    roots = solution.map(item =>
+      item && typeof item.text === "function" ? item.text() : String(item)
+    );
+  } else if (solution && typeof solution.toArray === "function") {
+    roots = solution.toArray().map(item =>
+      item && typeof item.text === "function" ? item.text() : String(item)
+    );
+  } else {
+    roots = splitSolutions(String(solution));
+  }
+
+  roots = [...new Set(roots.map(root => root.trim()).filter(Boolean))];
+
+  if (
+    !roots.length ||
+    roots.some(root => /unsolved|undefined|NaN/i.test(root))
+  ) {
+    throw new Error("해를 구하지 못했습니다. 방정식 형식을 확인해 주세요.");
+  }
+
+  const exact = [];
+  const approximate = [];
+
+  for (const root of roots) {
+    let tex;
+
+    try {
+      tex = window.nerdamer(root).toTeX();
+    } catch {
+      tex = root;
+    }
+
+    exact.push(`\\(${variable} = ${tex}\\)`);
+
+    // 큰 분수나 기호식도 가능하면 소수 근삿값으로 평가
+    try {
+      const numericText =
+        window.nerdamer(root).evaluate().text("decimals");
+      const n = Number(numericText);
+
+      if (Number.isFinite(n)) {
+        approximate.push(`\\(${variable} \\approx ${formatNumber(n)}\\)`);
+      }
+    } catch {
+      // 복소근이나 비수치 해는 근삿값에서 제외
+    }
+  }
+
+  let answer = "정확한 해:\n" + exact.join("\n");
+
+  if (approximate.length) {
+    answer += "\n\n소수 근삿값:\n" + approximate.join("\n");
+  }
+
+  return {
+    expression,
+    answer
+  };
+}
+
+function calculateText(raw) {
+  const expression = normalizeExpression(raw);
+
+  if (!expression) throw new Error("수식을 입력해 주세요.");
+
+  if (expression.includes("=")) {
+    return {
+      type: "equation",
+      expression,
+      answer: solveEquation(expression).answer
+    };
+  }
+
+  const result = evaluateNumeric(expression);
+
+  return {
+    type: "numeric",
+    expression: result.expression,
+    answer: `\\[${result.expression.replace(/\*/g, " \\times ")} = ${result.value}\\]`
+  };
+}
+
+async function renderMath(element) {
+  // MathJax가 로드되기 전에도 계산 결과는 표시됩니다.
+  const start = Date.now();
+
   while (
     !window.MathJax?.typesetPromise &&
-    Date.now() - started < 8000
+    Date.now() - start < 5000
   ) {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 40));
   }
 
   if (window.MathJax?.typesetPromise) {
-    await window.MathJax.typesetPromise([answerText]);
+    try {
+      await window.MathJax.typesetPromise([element]);
+    } catch {}
   }
 }
 
-aiButton.addEventListener("click", async function() {
-const question = input.value.trim();
+function appendMessage(role, text) {
+  const wrap = document.createElement("div");
+  wrap.className = `message ${role}`;
 
-@@ -415,18 +442,14 @@ <h1>공학 계산기 AI</h1>
-try {
-const response = await fetch(AI_API_URL, {
-method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      headers: { "Content-Type": "application/json" },
-body: JSON.stringify({ question })
-});
+  const label = document.createElement("div");
+  label.className = "message-label";
+  label.textContent = role === "user" ? "입력" : "계산 결과";
 
-const data = await response.json().catch(() => ({}));
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = text;
 
-if (!response.ok) {
-      throw new Error(
-        data.error || "AI 요청에 실패했습니다. 잠시 후 다시 시도해 주세요."
-      );
-      throw new Error(data.error || "AI 요청에 실패했습니다.");
+  wrap.append(label, bubble);
+  chatLog.appendChild(wrap);
+  chatLog.scrollTop = chatLog.scrollHeight;
+
+  if (role === "assistant") renderMath(bubble);
+
+  return bubble;
 }
 
-if (!data.answer) {
-@@ -435,14 +458,22 @@ <h1>공학 계산기 AI</h1>
+function sendToCalculator(raw) {
+  const text = raw.trim();
 
-statusText.textContent = "AI 풀이 완료";
-formulaText.textContent = "질문: " + question;
+  if (!text) {
+    appendMessage("assistant", "수식이나 방정식을 입력해 주세요.");
+    return;
+  }
 
-    // HTML로 실행하지 않고 텍스트로 넣어 안전성을 유지합니다.
-    // MathJax가 그 안의 LaTeX 수식을 렌더링합니다.
-    if (window.MathJax?.typesetClear) {
-      window.MathJax.typesetClear([answerText]);
+  appendMessage("user", text);
+
+  try {
+    const result = calculateText(text);
+
+    if (result.type === "equation") {
+      appendMessage(
+        "assistant",
+        `입력한 방정식: ${result.expression}\n\n${result.answer}`
+      );
+    } else {
+      appendMessage(
+        "assistant",
+        `변환한 수식: ${result.expression}\n\n결과:\n${result.answer}`
+      );
+    }
+  } catch (error) {
+    appendMessage(
+      "assistant",
+      error.message ||
+        "계산하지 못했습니다. 숫자, 연산자, 괄호와 방정식 형식을 확인해 주세요."
+    );
+  }
+}
+
+/* 오른쪽 채팅 입력: AI 요청 없이 로컬 계산 */
+chatForm.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const question = chatInput.value;
+  if (!question.trim()) return;
+
+  chatInput.value = "";
+  sendToCalculator(question);
+});
+
+/* Enter로 전송, Shift+Enter로 줄바꿈 */
+chatInput.addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    chatForm.requestSubmit();
+  }
+});
+
+/* 왼쪽 계산기 버튼도 오른쪽 채팅창에 계산 결과를 표시 */
+document.getElementById("calculateLeft").addEventListener("click", () => {
+  sendToCalculator(mathInput.value);
+});
+
+/* 키패드 */
+const keyLayouts = {
+  main: [
+    ["(", "("], [")", ")"], ["x²", "^2"], ["xʸ", "^"], ["√", "sqrt("],
+    ["7", "7"], ["8", "8"], ["9", "9"], ["÷", "/"], ["a/b", "()/()", 1],
+    ["4", "4"], ["5", "5"], ["6", "6"], ["×", "*"], ["π", "pi"],
+    ["1", "1"], ["2", "2"], ["3", "3"], ["−", "-"], ["+", "+"],
+    ["0", "0"], [".", "."], ["sin", "sin("], ["cos", "cos("], ["tan", "tan("],
+    ["x", "x"], ["=", "="], ["y", "y"], ["z", "z"], ["^3", "^3"]
+  ],
+  letters: [
+    ["x", "x"], ["y", "y"], ["z", "z"], ["a", "a"], ["b", "b"],
+    ["c", "c"], ["m", "m"], ["t", "t"], ["V", "V"], ["I", "I"],
+    ["R", "R"], ["P", "P"], ["L", "L"], ["C", "C"], ["F", "F"],
+    ["(", "("], [")", ")"], ["=", "="], ["+", "+"], ["−", "-"],
+    ["×", "*"], ["÷", "/"], ["^", "^"], ["π", "pi"], [".", "."]
+  ],
+  functions: [
+    ["sin(", "sin("], ["cos(", "cos("], ["tan(", "tan("],
+    ["√", "sqrt("], ["log(", "log("], ["ln(", "ln("],
+    ["π", "pi"], ["e", "e"], ["x²", "^2"], ["xʸ", "^"],
+    ["(", "("], [")", ")"], ["=", "="], ["+", "+"], ["−", "-"],
+    ["×", "*"], ["÷", "/"], ["a/b", "()/()", 1], ["x", "x"], ["^3", "^3"]
+  ]
+};
+
+function insertAtCursor(text, offset) {
+  const start = mathInput.selectionStart ?? mathInput.value.length;
+  const end = mathInput.selectionEnd ?? mathInput.value.length;
+
+  mathInput.setRangeText(text, start, end, "end");
+
+  const caret = start + (
+    Number.isInteger(offset) ? offset : text.length
+  );
+
+  mathInput.focus();
+  mathInput.setSelectionRange(caret, caret);
+}
+
+function renderKeys(tab) {
+  keyGrid.replaceChildren();
+
+  for (const [label, value, offset] of keyLayouts[tab]) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "key";
+
+    if (["+", "-", "*", "/", "^", "="].includes(value)) {
+      button.classList.add("operator");
     }
 
-answerText.textContent = data.answer;
-    await typesetAnswer();
+    if (["sqrt(", "sin(", "cos(", "tan(", "pi", "log(", "ln("].includes(value)) {
+      button.classList.add("func");
+    }
 
-} catch (error) {
-statusText.textContent = "AI 요청 실패";
-formulaText.textContent = "";
-answerText.textContent =
-error.name === "TypeError"
-        ? "서버에 연결하지 못했습니다. Worker 주소와 배포 상태를 확인해 주세요."
-        ? "서버 연결을 확인해 주세요."
-: error.message;
-} finally {
-aiButton.disabled = false;
+    button.textContent = label;
+    button.addEventListener("click", () => insertAtCursor(value, offset));
+    keyGrid.appendChild(button);
+  }
+
+  document.querySelectorAll(".tab").forEach(button => {
+    button.classList.toggle("active", button.dataset.tab === tab);
+  });
+}
+
+document.querySelectorAll(".tab").forEach(button => {
+  button.addEventListener("click", () => renderKeys(button.dataset.tab));
+});
+
+document.getElementById("clearButton").addEventListener("click", () => {
+  mathInput.value = "";
+  mathInput.focus();
+});
+
+document.getElementById("backspaceButton").addEventListener("click", () => {
+  const start = mathInput.selectionStart;
+  const end = mathInput.selectionEnd;
+
+  if (start !== end) {
+    mathInput.setRangeText("", start, end, "end");
+  } else if (start > 0) {
+    mathInput.setRangeText("", start - 1, end, "end");
+  }
+
+  mathInput.focus();
+});
+
+document.getElementById("degButton").addEventListener("click", () => {
+  angleMode = "deg";
+  document.getElementById("degButton").classList.add("active");
+  document.getElementById("radButton").classList.remove("active");
+});
+
+document.getElementById("radButton").addEventListener("click", () => {
+  angleMode = "rad";
+  document.getElementById("radButton").classList.add("active");
+  document.getElementById("degButton").classList.remove("active");
+});
+
+document.querySelectorAll(".example").forEach(button => {
+  button.addEventListener("click", () => {
+    chatInput.value = button.dataset.example;
+    chatInput.focus();
+  });
+});
+
+renderKeys("main");
+</script>
+</body>
+</html>
