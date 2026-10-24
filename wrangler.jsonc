@@ -1,0 +1,8 @@
+
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
+  "name": "calculator",
+  "main": "./src/index.js",
+  "compatibility_date": "2026-10-24",
+  "workers_dev": true
+}
