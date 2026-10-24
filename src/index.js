@@ -159,7 +159,7 @@ export default {
         }, 502, cors);
       }
 
-      const answer = cleanAnswer(rawAnswer);
+      const answer = rawAnswer;
 
       if (/Readable text and formulas used\?|Safety validation note included\?|Final Output Generation:/i.test(answer)) {
         return json({
