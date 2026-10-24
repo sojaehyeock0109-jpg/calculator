@@ -16,6 +16,13 @@ window.MathJax = {
   tex: {
     inlineMath: [["\\(", "\\)"], ["$", "$"]],
     displayMath: [["\\[", "\\]"], ["$$", "$$"]]
+  },
+  chtml: {
+    displayAlign: "center",
+    displayIndent: "0"
+  },
+  options: {
+    skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
   }
 };
 </script>
@@ -71,7 +78,39 @@ h1 {
   line-height: 1.7;
 }
 
-/* 계산기 화면 */
+input, button { font: inherit; }
+
+input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  color: var(--text);
+  background: white;
+}
+
+button {
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.primary {
+  color: white;
+  background: var(--blue);
+}
+
+.secondary {
+  color: #334155;
+  background: #e9eef6;
+}
+
 .screen {
   min-height: 126px;
   padding: 12px 15px;
@@ -96,14 +135,12 @@ h1 {
   color: var(--text);
 }
 
-#display::placeholder {
-  color: #94a3b8;
-}
+#display::placeholder { color: #94a3b8; }
 
 #screenResult {
   min-height: 24px;
   text-align: right;
-  font-size: 17px;
+  font-size: 16px;
   color: var(--muted);
   overflow-wrap: anywhere;
 }
@@ -138,7 +175,6 @@ h1 {
   font-size: 12px;
 }
 
-/* 6열 공학용 키패드 */
 .keypad {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -153,13 +189,11 @@ h1 {
   border-radius: 10px;
   background: #eff4fc;
   color: #172033;
-  font-size: 15px;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 
-.key:hover {
-  background: #dfeaff;
-}
+.key:hover { background: #dfeaff; }
 
 .key.function {
   background: #f0f5ff;
@@ -171,7 +205,7 @@ h1 {
 
 .key.operator {
   background: #edf3ff;
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .key.utility {
@@ -190,9 +224,7 @@ h1 {
   font-size: 20px;
 }
 
-.key.equal:hover {
-  background: #0755b5;
-}
+.key.equal:hover { background: #0755b5; }
 
 .help {
   margin-top: 14px;
@@ -201,7 +233,6 @@ h1 {
   line-height: 1.7;
 }
 
-/* 오른쪽 계산 결과와 기록 */
 .history-heading {
   display: flex;
   align-items: center;
@@ -226,11 +257,13 @@ h1 {
 .latest {
   margin-top: 16px;
   padding: 15px;
-  min-height: 142px;
+  min-height: 150px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: #f8fbff;
-  overflow-wrap: anywhere;
+
+  /* 수식이나 분수의 위아래가 잘리지 않도록 합니다. */
+  overflow: visible;
 }
 
 .latest-label {
@@ -249,8 +282,10 @@ h1 {
 .latest-answer {
   line-height: 1.9;
   font-size: 16px;
-  white-space: pre-wrap;
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  padding: 3px 0 8px;
+  overflow: visible;
 }
 
 .history-list {
@@ -260,7 +295,7 @@ h1 {
   margin-top: 16px;
   max-height: 460px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding: 2px 5px 5px 0;
 }
 
 .history-item {
@@ -285,16 +320,23 @@ h1 {
 
 .history-answer {
   font-size: 14px;
-  line-height: 1.8;
+  line-height: 1.9;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+  padding: 3px 0 7px;
+  overflow: visible;
 }
 
-.history-answer mjx-container,
-.latest-answer mjx-container {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
+.latest-answer mjx-container,
+.history-answer mjx-container {
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+mjx-container[display="true"] {
+  margin: .65em 0 !important;
+  padding: .2em 0 .35em;
+  overflow: visible !important;
 }
 
 .empty {
@@ -316,17 +358,12 @@ h1 {
     padding: 16px;
   }
 
-  .history-list {
-    max-height: 350px;
-  }
+  .history-list { max-height: 350px; }
 }
 
 @media (max-width: 420px) {
   .keypad { gap: 5px; }
-  .key {
-    min-height: 42px;
-    font-size: 12px;
-  }
+  .key { min-height: 42px; font-size: 12px; }
   #display { font-size: 20px; }
 }
 </style>
@@ -335,58 +372,56 @@ h1 {
 <body>
 <div class="app">
 
-  <!-- 왼쪽: 공학용 계산기 -->
-  <section class="panel">
-    <h1>공학용 계산기</h1>
-    <p class="subtitle">키패드를 누르거나 수식을 직접 입력하세요.</p>
+<section class="panel">
+  <h1>공학용 계산기</h1>
+  <p class="subtitle">키패드를 누르거나 수식을 직접 입력하세요.</p>
 
-    <div class="screen">
-      <input id="display" type="text" autocomplete="off"
-        aria-label="계산기 입력"
-        placeholder="0">
-      <div id="screenResult">계산 결과가 여기에 표시됩니다.</div>
+  <div class="screen">
+    <input id="display" type="text" autocomplete="off"
+      aria-label="계산기 입력" placeholder="수식 입력">
+    <div id="screenResult">계산 결과가 여기에 표시됩니다.</div>
+  </div>
+
+  <div class="mode-row">
+    <div class="modes">
+      <button class="mode active" id="degButton" type="button">Deg</button>
+      <button class="mode" id="radButton" type="button">Rad</button>
     </div>
+    <span class="memory-label" id="memoryStatus">M: 비어 있음</span>
+  </div>
 
-    <div class="mode-row">
-      <div class="modes">
-        <button class="mode active" id="degButton" type="button">Deg</button>
-        <button class="mode" id="radButton" type="button">Rad</button>
-      </div>
-      <span class="memory-label" id="memoryStatus">M: 비어 있음</span>
+  <div class="keypad" id="keypad"></div>
+
+  <div class="help">
+    예: <code>x²+4는 16</code>, <code>x세제곱은 8</code><br>
+    방정식에서는 등호 대신 '은' 또는 '는'을 입력해도 됩니다.
+    AI API는 사용하지 않습니다.
+  </div>
+</section>
+
+<section class="panel">
+  <div class="history-heading">
+    <h2>계산 기록</h2>
+    <button class="clear-history" id="clearHistory" type="button">
+      기록 지우기
+    </button>
+  </div>
+
+  <div class="latest">
+    <div class="latest-label">최근 계산 결과</div>
+    <div class="latest-expression" id="latestExpression">
+      계산 결과가 여기에 표시됩니다.
     </div>
-
-    <div class="keypad" id="keypad"></div>
-
-    <div class="help">
-      예: <code>x^2 + 4 = 16</code> 또는 <code>x세제곱은 8</code><br>
-      등호 대신 '은' 또는 '는'을 입력해도 방정식으로 인식합니다.<br>
-      복소수 해가 있는 이차방정식은 허수 해도 표시합니다.
+    <div class="latest-answer" id="latestAnswer">
+      왼쪽에서 계산을 시작하세요.
     </div>
-  </section>
+  </div>
 
-  <!-- 오른쪽: 결과와 최근 계산 -->
-  <section class="panel">
-    <div class="history-heading">
-      <h2>계산 기록</h2>
-      <button class="clear-history" id="clearHistory" type="button">
-        기록 지우기
-      </button>
-    </div>
+  <div class="history-list" id="historyList">
+    <div class="empty">계산 기록이 여기에 표시됩니다. (최대 10개)</div>
+  </div>
+</section>
 
-    <div class="latest">
-      <div class="latest-label">최근 계산 결과</div>
-      <div class="latest-expression" id="latestExpression">
-        계산 결과가 여기에 표시됩니다.
-      </div>
-      <div class="latest-answer" id="latestAnswer">
-        왼쪽에서 계산을 시작하세요.
-      </div>
-    </div>
-
-    <div class="history-list" id="historyList">
-      <div class="empty">계산 기록이 여기에 표시됩니다. (최대 10개)</div>
-    </div>
-  </section>
 </div>
 
 <script>
@@ -409,7 +444,7 @@ const allowedFunctions = new Set([
   "sqrt", "nthroot", "sin", "cos", "tan",
   "asin", "acos", "atan", "log", "ln",
   "abs", "floor", "ceil", "round", "factorial",
-  "exp", "pi", "e"
+  "exp", "pi", "e", "i"
 ]);
 
 function formatNumber(value) {
@@ -446,37 +481,7 @@ function simplifySqrt(n) {
     }
   }
 
-  return {outside, inside};
-}
-
-function renderExactRadical(base, radicand, denominator, sign = "\\pm") {
-  const square = simplifySqrt(radicand);
-  let integerPart = base;
-  let radicalCoefficient = square.outside;
-  let den = denominator;
-
-  const common = gcd3(integerPart, radicalCoefficient, den);
-  integerPart /= common;
-  radicalCoefficient /= common;
-  den /= common;
-
-  const radical =
-    (radicalCoefficient === 1 ? "" : radicalCoefficient) +
-    `\\sqrt{${square.inside}}`;
-
-  let numerator;
-
-  if (integerPart === 0) {
-    numerator = `${sign} ${radical}`;
-  } else {
-    numerator =
-      `${integerPart < 0 ? "-" + Math.abs(integerPart) : integerPart}` +
-      ` ${sign} ${radical}`;
-  }
-
-  return den === 1
-    ? numerator
-    : `\\frac{${numerator}}{${den}}`;
+  return { outside, inside };
 }
 
 function normalizeExpression(raw) {
@@ -491,11 +496,7 @@ function normalizeExpression(raw) {
     .replace(/²/g, "^2")
     .replace(/³/g, "^3");
 
-  // 한국어 자연어 수식 전처리
-  s = s.replace(
-    /(\d+(?:\.\d+)?)\s*의\s*(\d+(?:\.\d+)?)\s*제곱/g,
-    "($1^$2)"
-  );
+  s = s.replace(/(\d+(?:\.\d+)?)\s*의\s*(\d+(?:\.\d+)?)\s*제곱/g, "($1^$2)");
   s = s.replace(/(\d+(?:\.\d+)?)\s*의\s*세제곱/g, "($1^3)");
   s = s.replace(/(\d+(?:\.\d+)?)\s*의\s*제곱/g, "($1^2)");
 
@@ -523,16 +524,16 @@ function normalizeExpression(raw) {
     s = s.split(word).join(replacement);
   }
 
-  // "x세제곱은 8", "x제곱 더하기 4는 16"
-  // '은/는'을 등호로 취급하되, 오른쪽에 수식이 올 때만 변환
+  // "x세제곱은 8" -> "x^3=8"
   s = s.replace(
-    /(?:은|는)(?=\s*[+\-]?(?:\d|[a-zA-Z(]))/g,
-    "="
+    /은(?=\s*[+\-]?\s*(?:\d|[a-zA-Z(]))/g, "="
+  );
+  s = s.replace(
+    /는(?=\s*[+\-]?\s*(?:\d|[a-zA-Z(]))/g, "="
   );
 
-  // sin 30 -> sin(30)
   s = s.replace(
-    /\b(sqrt|sin|cos|tan|asin|acos|atan|log|ln|abs|floor|ceil|round)\s+([+-]?\d+(?:\.\d+)?)/g,
+    /\b(sqrt|sin|cos|tan|asin|acos|atan|log|ln|abs|floor|ceil|round|factorial)\s+([+-]?\d+(?:\.\d+)?)/g,
     "$1($2)"
   );
 
@@ -542,7 +543,6 @@ function normalizeExpression(raw) {
 function prepareTrig(expr) {
   if (angleMode === "rad") return expr;
 
-  // 입력 각도는 도 단위로 처리
   expr = expr.replace(/\b(sin|cos|tan)\(([^()]*)\)/g,
     (whole, fn, arg) => {
       if (/^[0-9.+\-*/\s]+$/.test(arg)) {
@@ -552,7 +552,6 @@ function prepareTrig(expr) {
     }
   );
 
-  // 역삼각함수의 출력은 도 단위로 표시
   expr = expr.replace(/\b(asin|acos|atan)\(([^()]*)\)/g,
     (whole, fn, arg) => {
       if (/^[0-9.+\-*/\s]+$/.test(arg)) {
@@ -565,83 +564,70 @@ function prepareTrig(expr) {
   return expr;
 }
 
-function validateSyntax(expr, allowVariable = false) {
-  if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(expr)) {
-    throw new Error("지원하지 않는 문자가 포함되어 있습니다.");
+function splitTopLevel(text) {
+  let s = String(text).trim();
+
+  if (
+    (s.startsWith("{") && s.endsWith("}")) ||
+    (s.startsWith("[") && s.endsWith("]"))
+  ) {
+    s = s.slice(1, -1);
   }
 
-  const names = expr.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
-  const unknown = names.filter(name => !allowedFunctions.has(name));
+  const items = [];
+  let current = "";
+  let depth = 0;
 
-  if (!allowVariable && unknown.length) {
-    throw new Error("수치 계산에 변수가 포함되어 있습니다. 방정식인지 확인해 주세요.");
+  for (const ch of s) {
+    if ("([{".includes(ch)) depth++;
+    if (")] }".replace(/ /g, "").includes(ch)) depth--;
+
+    if (ch === "," && depth === 0) {
+      if (current.trim()) items.push(current.trim());
+      current = "";
+    } else {
+      current += ch;
+    }
   }
 
-  return [...new Set(unknown)];
+  if (current.trim()) items.push(current.trim());
+  return items;
 }
 
-function insertText(text, caretOffset = null) {
-  const start = display.selectionStart ?? display.value.length;
-  const end = display.selectionEnd ?? display.value.length;
-
-  display.setRangeText(text, start, end, "end");
-
-  const caret = start + (
-    Number.isInteger(caretOffset) ? caretOffset : text.length
-  );
-
-  display.focus();
-  display.setSelectionRange(caret, caret);
-}
-
-function setScreen(value, result = "") {
-  display.value = value;
-  screenResult.textContent = result;
-}
-
-function evaluateNumeric(raw) {
-  let expr = prepareTrig(normalizeExpression(raw));
-
-  if (!expr) throw new Error("수식을 입력해 주세요.");
-  if (expr.includes("=")) throw new Error("방정식에는 등호 대신 '은' 또는 '는'도 사용할 수 있습니다.");
-
-  validateSyntax(expr);
-
-  const evaluated = window.nerdamer(expr).evaluate().text("decimals");
-  const value = Number(evaluated);
-
-  if (!Number.isFinite(value)) {
-    throw new Error("계산 결과가 유효한 실수가 아닙니다.");
-  }
-
-  return {expr, value};
-}
-
-function polynomialCoefficients(expr, variable) {
-  const expanded = window.nerdamer(expr).expand();
+function getPolynomialCoefficients(expr, variable) {
+  const expanded = window.nerdamer(expr).expand().toString();
   const vector = window.nerdamer.coeffs(expanded, variable);
 
-  let list;
-
-  if (typeof vector.toArray === "function") {
-    list = vector.toArray();
-  } else if (Array.isArray(vector.elements)) {
-    list = vector.elements;
-  } else {
+  if (!vector || typeof vector.each !== "function") {
     throw new Error("다항식 계수를 추출할 수 없습니다.");
   }
 
-  return list.map(item => {
-    const n = Number(
+  const coefficients = [];
+
+  vector.each(function(item, index) {
+    const value = Number(
       window.nerdamer(String(item)).evaluate().text("decimals")
     );
 
-    if (!Number.isFinite(n)) {
-      throw new Error("계수를 숫자로 변환할 수 없습니다.");
+    if (!Number.isFinite(value)) {
+      throw new Error("다항식 계수가 숫자가 아닙니다.");
     }
 
-    return n;
+    coefficients[index] = value;
   });
+
+  if (!coefficients.length) {
+    throw new Error("다항식 계수가 비어 있습니다.");
+  }
+
+  while (
+    coefficients.length > 1 &&
+    Math.abs(coefficients[coefficients.length - 1]) < 1e-10
+  ) {
+    coefficients.pop();
+  }
+
+  return coefficients;
 }
 
 function solveQuadratic(a, b, c, variable) {
@@ -668,67 +654,68 @@ function solveQuadratic(a, b, c, variable) {
   }
 
   let D = b * b - 4 * a * c;
+
   if (Math.abs(D) < 1e-10) D = 0;
 
   const integerCoefficients = [a, b, c, D].every(integerNear);
 
   // 복소수 해
   if (D < 0) {
-    const re = -b / (2 * a);
-    const im = Math.sqrt(-D) / (2 * a);
+    const realPart = -b / (2 * a);
+    const imaginaryPart = Math.sqrt(-D) / (2 * a);
 
     if (!integerCoefficients) {
       return {
         answer:
           `복소수 해:\n` +
-          `\\[${variable} \\approx ${formatNumber(re)} + ${formatNumber(im)}i\\]\n` +
-          `\\[${variable} \\approx ${formatNumber(re)} - ${formatNumber(im)}i\\]`
+          `\\[${variable} \\approx ${formatNumber(realPart)}+${formatNumber(imaginaryPart)}i\\]\n` +
+          `\\[${variable} \\approx ${formatNumber(realPart)}-${formatNumber(imaginaryPart)}i\\]`
       };
     }
 
     const ai = Math.round(a);
     const bi = Math.round(b);
     const negD = Math.round(-D);
-    const denominator = 2 * ai;
-    const square = simplifySqrt(negD);
+    const sqrtInfo = simplifySqrt(negD);
 
     let base = -bi;
-    let coefficient = square.outside;
-    let den = denominator;
+    let imaginaryCoefficient = sqrtInfo.outside;
+    let denominator = 2 * ai;
 
-    const common = gcd3(base, coefficient, den);
+    const common = gcd3(base, imaginaryCoefficient, denominator);
+
     base /= common;
-    coefficient /= common;
-    den /= common;
+    imaginaryCoefficient /= common;
+    denominator /= common;
 
-    let imagTerm =
-      (coefficient === 1 ? "" : coefficient) +
+    const imaginaryTerm =
+      (imaginaryCoefficient === 1 ? "" : imaginaryCoefficient) +
       "i" +
-      (square.inside === 1 ? "" : `\\sqrt{${square.inside}}`);
+      (sqrtInfo.inside === 1 ? "" : `\\sqrt{${sqrtInfo.inside}}`);
 
     let numerator;
 
     if (base === 0) {
-      numerator = `\\pm ${imagTerm}`;
+      numerator = `\\pm ${imaginaryTerm}`;
     } else {
       numerator =
         `${base < 0 ? "-" + Math.abs(base) : base}` +
-        ` \\pm ${imagTerm}`;
+        ` \\pm ${imaginaryTerm}`;
     }
 
-    const exact = den === 1
+    const exact = denominator === 1
       ? numerator
-      : `\\frac{${numerator}}{${den}}`;
+      : `\\frac{${numerator}}{${denominator}}`;
 
     let approximate;
 
-    if (Math.abs(re) < 1e-10) {
+    if (Math.abs(realPart) < 1e-10) {
       approximate =
-        `\\[${variable} \\approx \\pm ${formatNumber(im)}i\\]`;
+        `\\[${variable} \\approx \\pm ${formatNumber(imaginaryPart)}i\\]`;
     } else {
       approximate =
-        `\\[${variable} \\approx ${formatNumber(re)} + ${formatNumber(im)}i\\]\n` +
-        `\\[${variable} \\approx ${formatNumber(re)} - ${formatNumber(im)}i\\]`;
+        `\\[${variable} \\approx ${formatNumber(realPart)}+${formatNumber(imaginaryPart)}i\\]\n` +
+        `\\[${variable} \\approx ${formatNumber(realPart)}-${formatNumber(imaginaryPart)}i\\]`;
     }
 
     return {
@@ -738,45 +725,41 @@ function solveQuadratic(a, b, c, variable) {
     };
   }
 
-  // 실수 근
   const x1 = (-b + Math.sqrt(D)) / (2 * a);
   const x2 = (-b - Math.sqrt(D)) / (2 * a);
   const roots = Math.abs(x1 - x2) < 1e-8 ? [x1] : [x1, x2];
 
-  // 판별식이 완전제곱이면 정수나 소수만 출력
+  // 판별식이 완전제곱이면 간단한 정수 또는 소수로 표시
   if (integerCoefficients) {
     const ai = Math.round(a);
     const bi = Math.round(b);
     const ci = Math.round(c);
-    const di = Math.round(D);
+    const di = Math.max(0, Math.round(D));
     const sqrtD = Math.round(Math.sqrt(di));
 
     if (sqrtD * sqrtD === di) {
       return {
-        answer:
-          "해:\n" +
-          roots.map(x =>
-            `\\[${variable} = ${integerNear(x) ? Math.round(x) : formatNumber(x)}\\]`
-          ).join("\n")
+        answer: "해:\n" + roots.map(x =>
+          `\\[${variable} = ${integerNear(x) ? Math.round(x) : formatNumber(x)}\\]`
+        ).join("\n")
       };
     }
 
-    // 근호를 단순화하고 공통 인수를 약분
-    const square = simplifySqrt(di);
-    const denominator = 2 * ai;
-
+    // 완전제곱이 아닌 경우 근호를 단순화
+    const sqrtInfo = simplifySqrt(di);
     let base = -bi;
-    let coefficient = square.outside;
-    let den = denominator;
+    let radicalCoefficient = sqrtInfo.outside;
+    let denominator = 2 * ai;
 
-    const common = gcd3(base, coefficient, den);
+    const common = gcd3(base, radicalCoefficient, denominator);
+
     base /= common;
-    coefficient /= common;
-    den /= common;
+    radicalCoefficient /= common;
+    denominator /= common;
 
     const radical =
-      (coefficient === 1 ? "" : coefficient) +
-      `\\sqrt{${square.inside}}`;
+      (radicalCoefficient === 1 ? "" : radicalCoefficient) +
+      `\\sqrt{${sqrtInfo.inside}}`;
 
     let numerator;
 
@@ -788,106 +771,99 @@ function solveQuadratic(a, b, c, variable) {
         ` \\pm ${radical}`;
     }
 
-    const exact = den === 1
+    const exact = denominator === 1
       ? `${variable} = ${numerator}`
-      : `${variable} = \\frac{${numerator}}{${den}}`;
+      : `${variable} = \\frac{${numerator}}{${denominator}}`;
 
-    const approx = roots.map(x =>
+    const approximate = roots.map(x =>
       `\\[${variable} \\approx ${formatNumber(x)}\\]`
     ).join("\n");
 
     return {
       answer:
         `정확한 해:\n\\[${exact}\\]\n\n` +
-        `소수 근삿값:\n${approx}`
+        `소수 근삿값:\n${approximate}`
     };
   }
 
-  // 소수 계수는 거대한 분수 대신 소수로 표시
   return {
     answer:
       "실수 해:\n" +
-      roots.map(x => `\\[${variable} \\approx ${formatNumber(x)}\\]`).join("\n")
+      roots.map(x =>
+        `\\[${variable} \\approx ${formatNumber(x)}\\]`
+      ).join("\n")
   };
 }
 
-function splitRoots(text) {
-  let s = String(text).trim();
+function numericRealRoot(root) {
+  try {
+    const expression = window.nerdamer(root);
+    const evaluated = expression.evaluate().text("decimals");
 
-  if (
-    (s.startsWith("[") && s.endsWith("]")) ||
-    (s.startsWith("{") && s.endsWith("}"))
-  ) {
-    s = s.slice(1, -1);
-  }
-
-  const out = [];
-  let current = "";
-  let depth = 0;
-
-  for (const ch of s) {
-    if ("([{".includes(ch)) depth++;
-    if (")] }".replace(/ /g, "").includes(ch)) depth--;
-
-    if (ch === "," && depth === 0) {
-      if (current.trim()) out.push(current.trim());
-      current = "";
-    } else {
-      current += ch;
+    if (/(^|[^a-z])i([^a-z]|$)/i.test(root + " " + evaluated)) {
+      return null;
     }
+
+    const value = Number(evaluated);
+    return Number.isFinite(value) ? value : null;
+  } catch {
+    return null;
   }
-
-  if (current.trim()) out.push(current.trim());
-
-  return out;
 }
 
 function solveEquation(raw) {
   const expr = normalizeExpression(raw);
 
   if ((expr.match(/=/g) || []).length !== 1) {
-    throw new Error("등호 또는 '은/는'으로 양쪽을 구분한 방정식을 입력해 주세요.");
+    throw new Error("등호 하나로 방정식을 입력해 주세요.");
   }
 
   const [left, right] = expr.split("=").map(s => s.trim());
 
-  if (!left || !right) throw new Error("등호 양쪽에 식을 입력해 주세요.");
+  if (!left || !right) {
+    throw new Error("등호 양쪽에 수식을 입력해 주세요.");
+  }
 
-  const names = (left + " " + right).match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
-  const variables = [...new Set(names.filter(n => !allowedFunctions.has(n)))];
+  if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(left + right)) {
+    throw new Error("지원하지 않는 문자가 포함되어 있습니다.");
+  }
 
-  // 미지수가 없는 등식은 양변의 값이 같은지 확인
+  const identifiers =
+    (left + " " + right).match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
+
+  const variables = [...new Set(
+    identifiers.filter(name => !allowedFunctions.has(name))
+  )];
+
   if (variables.length === 0) {
-    const l = evaluateNumeric(left).value;
-    const r = evaluateNumeric(right).value;
-    const equal = Math.abs(l - r) < 1e-9;
+    const lhs = Number(window.nerdamer(left).evaluate().text("decimals"));
+    const rhs = Number(window.nerdamer(right).evaluate().text("decimals"));
 
     return {
       expr,
-      answer: equal
-        ? `참: 양변이 같습니다.\\[${l} = ${r}\\]`
-        : `거짓: 양변이 다릅니다.\\[${l} \\ne ${r}\\]`
+      answer: Math.abs(lhs - rhs) < 1e-9
+        ? "참: 양변이 같습니다."
+        : "거짓: 양변이 다릅니다."
     };
   }
 
   if (variables.length !== 1) {
-    throw new Error("현재는 미지수 하나인 방정식을 지원합니다.");
+    throw new Error("현재는 미지수 하나인 방정식만 지원합니다.");
   }
 
   const variable = variables[0];
   const residual = `(${left})-(${right})`;
 
-  // 다항식 계수를 직접 추출하여 1차/2차를 계산
+  // 다항식 계수를 직접 추출
+  let coefficients = null;
+
   try {
-    let coefficients = polynomialCoefficients(residual, variable);
+    coefficients = getPolynomialCoefficients(residual, variable);
+  } catch {
+    coefficients = null;
+  }
 
-    while (
-      coefficients.length > 1 &&
-      Math.abs(coefficients[coefficients.length - 1]) < 1e-10
-    ) {
-      coefficients.pop();
-    }
-
+  if (coefficients && coefficients.length) {
     const degree = coefficients.length - 1;
 
     if (degree === 0) {
@@ -923,11 +899,9 @@ function solveEquation(raw) {
         ...solveQuadratic(a, b, c, variable)
       };
     }
-  } catch (error) {
-    // 다항식 계수 추출에 실패하면 아래 일반 솔버 사용
   }
 
-  // 고차 방정식은 일반 솔버 사용
+  // 3차 이상: Nerdamer 솔버
   let solution;
 
   try {
@@ -936,11 +910,16 @@ function solveEquation(raw) {
     throw new Error("이 방정식은 현재 풀이 엔진에서 처리하지 못했습니다.");
   }
 
-  const candidates = splitRoots(String(solution));
+  const roots = splitTopLevel(String(solution));
+
+  if (!roots.length || /unsolved|undefined|nan/i.test(String(solution))) {
+    throw new Error("해를 구하지 못했습니다.");
+  }
+
   const realRoots = [];
   const complexRoots = [];
 
-  for (const root of candidates) {
+  for (const root of roots) {
     let tex;
 
     try {
@@ -954,31 +933,46 @@ function solveEquation(raw) {
       continue;
     }
 
-    try {
-      const value = Number(
-        window.nerdamer(root).evaluate().text("decimals")
-      );
+    const value = numericRealRoot(root);
 
-      if (Number.isFinite(value)) {
-        if (!realRoots.some(r => Math.abs(r - value) < 1e-7)) {
-          realRoots.push(value);
-        }
-      } else {
-        complexRoots.push({ root, tex });
+    if (value !== null) {
+      if (!realRoots.some(r => Math.abs(r.value - value) < 1e-7)) {
+        realRoots.push({ root, tex, value });
       }
-    } catch {
+    } else {
       complexRoots.push({ root, tex });
     }
   }
 
   if (realRoots.length) {
-    return {
-      expr,
-      answer: "실수 해:\n" +
-        realRoots.map(v =>
-          `\\[${variable} = ${integerNear(v) ? Math.round(v) : formatNumber(v)}\\]`
-        ).join("\n")
-    };
+    const exact = [];
+    const approximate = [];
+
+    for (const item of realRoots) {
+      const symbolic = /sqrt|\\sqrt|1\/2|\^\(1\/2\)/i.test(item.root + " " + item.tex);
+
+      if (integerNear(item.value)) {
+        exact.push(`\\[${variable} = ${Math.round(item.value)}\\]`);
+      } else if (symbolic) {
+        exact.push(`\\[${variable} = ${item.tex}\\]`);
+        approximate.push(`\\[${variable} \\approx ${formatNumber(item.value)}\\]`);
+      } else {
+        exact.push(`\\[${variable} \\approx ${formatNumber(item.value)}\\]`);
+      }
+    }
+
+    let answer = "실수 해:\n" + exact.join("\n");
+
+    if (approximate.length) {
+      answer += "\n\n소수 근삿값:\n" + approximate.join("\n");
+    }
+
+    if (complexRoots.length) {
+      answer += "\n\n복소수 해:\n" +
+        complexRoots.map(r => `\\[${variable} = ${r.tex}\\]`).join("\n");
+    }
+
+    return { expr, answer };
   }
 
   if (complexRoots.length) {
@@ -992,55 +986,68 @@ function solveEquation(raw) {
   return { expr, answer: "해를 구하지 못했습니다." };
 }
 
-function calc(raw) {
+function prepareTrig(expr) {
+  if (angleMode === "rad") return expr;
+
+  expr = expr.replace(/\b(sin|cos|tan)\(([^()]*)\)/g,
+    (whole, fn, arg) => {
+      if (/^[0-9.+\-*/\s]+$/.test(arg)) {
+        return `${fn}((${arg})*pi/180)`;
+      }
+      return whole;
+    }
+  );
+
+  expr = expr.replace(/\b(asin|acos|atan)\(([^()]*)\)/g,
+    (whole, fn, arg) => {
+      if (/^[0-9.+\-*/\s]+$/.test(arg)) {
+        return `((${fn}(${arg}))*180/pi)`;
+      }
+      return whole;
+    }
+  );
+
+  return expr;
+}
+
+function calculateExpression(raw) {
   const expr = normalizeExpression(raw);
 
   if (!expr) throw new Error("수식을 입력해 주세요.");
 
   if (expr.includes("=")) {
     return {
+      kind: "equation",
       expr,
       ...solveEquation(expr)
     };
   }
 
-  let numericExpr = expr;
-
-  // 공학용 버튼과 직접 입력에서 허용되는 문자만 사용
-  validateSyntax(numericExpr);
-
-  numericExpr = prepareTrig(numericExpr);
-
-  const text = window.nerdamer(numericExpr).evaluate().text("decimals");
-  const value = Number(text);
-
-  if (!Number.isFinite(value)) {
-    throw new Error("계산 결과가 유효한 숫자가 아닙니다.");
-  }
-
-  return {
-    expr,
-    value,
-    answer: formatNumber(value)
-  };
-}
-
-function validateSyntax(expr) {
   if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(expr)) {
     throw new Error("지원하지 않는 문자가 포함되어 있습니다.");
   }
 
-  const names = expr.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
-  const unknown = names.filter(n => !allowedFunctions.has(n));
+  const identifiers = expr.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
+  const unknown = identifiers.filter(name => !allowedFunctions.has(name));
 
   if (unknown.length) {
-    throw new Error("숫자 계산에 미지수가 포함되어 있습니다. 등식이면 '=' 또는 '은/는'을 입력하세요.");
+    throw new Error("숫자 계산에 변수가 포함되어 있습니다. 방정식이라면 '은' 또는 '는'을 사용해 주세요.");
   }
-}
 
-function setLatest(expr, answer) {
-  latestExpression.textContent = expr;
-  latestAnswer.textContent = answer;
+  const numericExpr = prepareTrig(expr);
+  const text = window.nerdamer(numericExpr).evaluate().text("decimals");
+  const value = Number(text);
+
+  if (!Number.isFinite(value)) {
+    throw new Error("유효한 숫자 결과가 아닙니다.");
+  }
+
+  return {
+    kind: "numeric",
+    expr,
+    value,
+    answer: formatNumber(value)
+  };
 }
 
 async function renderMath(element) {
@@ -1056,13 +1063,18 @@ async function renderMath(element) {
 }
 
 function addHistory(expr, answer) {
-  const item = { expr, answer };
-  history.unshift(item);
+  history.unshift({ expr, answer });
   history = history.slice(0, 10);
 
   historyList.replaceChildren();
 
-  for (const entry of history) {
+  if (!history.length) {
+    historyList.innerHTML =
+      '<div class="empty">계산 기록이 없습니다.</div>';
+    return;
+  }
+
+  for (const item of history) {
     const card = document.createElement("div");
     card.className = "history-item";
     card.tabIndex = 0;
@@ -1070,22 +1082,22 @@ function addHistory(expr, answer) {
 
     const expression = document.createElement("div");
     expression.className = "history-expression";
-    expression.textContent = entry.expr;
+    expression.textContent = item.expr;
 
     const result = document.createElement("div");
     result.className = "history-answer";
-    result.textContent = entry.answer;
+    result.textContent = item.answer;
 
     card.append(expression, result);
 
     card.addEventListener("click", () => {
-      display.value = entry.expr;
+      display.value = item.expr;
       display.focus();
     });
 
     card.addEventListener("keydown", event => {
       if (event.key === "Enter") {
-        display.value = entry.expr;
+        display.value = item.expr;
         display.focus();
       }
     });
@@ -1093,20 +1105,17 @@ function addHistory(expr, answer) {
     historyList.appendChild(card);
     renderMath(result);
   }
-
-  if (!history.length) {
-    historyList.innerHTML = '<div class="empty">계산 기록이 없습니다.</div>';
-  }
 }
 
-function showError(expression, error) {
-  const message = error && error.message
-    ? error.message
-    : "수식을 계산하지 못했습니다.";
+function saveResult(expr, answer, screenText = "계산 완료") {
+  latestExpression.textContent = expr;
+  latestAnswer.textContent = answer;
+  screenResult.textContent = screenText;
 
-  setLatest(expression, message);
-  screenResult.textContent = "계산 오류";
-  addHistory(expression, message);
+  addHistory(expr, answer);
+
+  renderMath(latestAnswer);
+  historyList.querySelectorAll(".history-answer").forEach(el => renderMath(el));
 }
 
 async function calculateCurrent() {
@@ -1118,109 +1127,65 @@ async function calculateCurrent() {
   }
 
   try {
-    const result = calc(raw);
-    let answer;
+    const result = calculateExpression(raw);
 
-    if (result.value !== undefined) {
-      answer = `\\[${result.expr} = ${result.answer}\\]`;
+    if (result.kind === "numeric") {
       lastAnswer = result.value;
-      screenResult.textContent = result.answer;
+
+      const answer = `\\[${result.expr.replace(/\*/g, " \\times ")} = ${result.answer}\\]`;
+
+      saveResult(result.expr, answer, result.answer);
     } else {
-      answer = result.answer;
-      screenResult.textContent = "계산 완료";
+      const answer = result.answer;
 
-      // 단순한 정수 해가 있으면 Ans에 저장
-      const first = answer.match(/=\\s*(-?\\d+(?:\\.\\d+)?)/);
-      if (first) lastAnswer = Number(first[1]);
+      // 가능한 첫 번째 실근을 Ans에 저장
+      const match = answer.match(/\\\[[a-zA-Z]+\s*=\s*(-?\d+(?:\.\d+)?)/);
+
+      if (match) lastAnswer = Number(match[1]);
+
+      saveResult(result.expr, answer, "방정식 풀이 완료");
     }
-
-    setLatest(result.expr, answer);
-    addHistory(result.expr, answer);
-
-    await renderMath(latestAnswer);
-    historyList.querySelectorAll(".history-answer").forEach(renderMath);
   } catch (error) {
-    showError(raw, error);
+    saveResult(raw, error.message || "계산하지 못했습니다.", "계산 오류");
   }
 }
 
-/* 키패드 */
-const keyDefinitions = [
-  { label: "sin", action: "insert", value: "sin(" },
-  { label: "cos", action: "insert", value: "cos(" },
-  { label: "tan", action: "insert", value: "tan(" },
-  { label: "asin", action: "insert", value: "asin(" },
-  { label: "acos", action: "insert", value: "acos(" },
-  { label: "atan", action: "insert", value: "atan(" },
-
-  { label: "log", action: "insert", value: "log(" },
-  { label: "ln", action: "insert", value: "ln(" },
-  { label: "x²", action: "insert", value: "^2" },
-  { label: "x³", action: "insert", value: "^3" },
-  { label: "xʸ", action: "insert", value: "^" },
-  { label: "y√x", action: "insert", value: "nthroot(" },
-
-  { label: "√x", action: "insert", value: "sqrt(" },
-  { label: "³√x", action: "insert", value: "nthroot(,3)", offset: 8 },
-  { label: "10ˣ", action: "insert", value: "10^(" },
-  { label: "eˣ", action: "insert", value: "e^(" },
-  { label: "1/x", action: "insert", value: "1/(" },
-  { label: "n!", action: "insert", value: "factorial(" },
-
-  { label: "abs", action: "insert", value: "abs(" },
-  { label: "EXP", action: "insert", value: "*10^" },
-  { label: "floor", action: "insert", value: "floor(" },
-  { label: "ceil", action: "insert", value: "ceil(" },
-  { label: "round", action: "insert", value: "round(" },
-  { label: "π", action: "insert", value: "pi" },
-
-  { label: "M+", action: "memoryAdd" },
-  { label: "M−", action: "memorySubtract" },
-  { label: "MR", action: "memoryRecall" },
-  { label: "e", action: "insert", value: "e" },
-  { label: "(", action: "insert", value: "(" },
-  { label: ")", action: "insert", value: ")" },
-
-  { label: "7", action: "insert", value: "7", cls: "number" },
-  { label: "8", action: "insert", value: "8", cls: "number" },
-  { label: "9", action: "insert", value: "9", cls: "number" },
-  { label: "/", action: "insert", value: "/", cls: "operator" },
-  { label: "%", action: "insert", value: "/100", cls: "operator" },
-  { label: "^", action: "insert", value: "^", cls: "operator" },
-
-  { label: "4", action: "insert", value: "4", cls: "number" },
-  { label: "5", action: "insert", value: "5", cls: "number" },
-  { label: "6", action: "insert", value: "6", cls: "number" },
-  { label: "*", action: "insert", value: "*", cls: "operator" },
-  { label: "±", action: "sign", cls: "operator" },
-  { label: "AC", action: "clear", cls: "danger" },
-
-  { label: "1", action: "insert", value: "1", cls: "number" },
-  { label: "2", action: "insert", value: "2", cls: "number" },
-  { label: "3", action: "insert", value: "3", cls: "number" },
-  { label: "-", action: "insert", value: "-", cls: "operator" },
-  { label: "Ans", action: "answer", cls: "operator" },
-  { label: "C", action: "backspace", cls: "danger" },
-
-  { label: "0", action: "insert", value: "0", cls: "number" },
-  { label: ".", action: "insert", value: ".", cls: "number" },
-  { label: "+", action: "insert", value: "+", cls: "operator" },
-  { label: "=", action: "calculate", cls: "equal" }
-];
-
-function insertAtCursor(text, caretOffset = null) {
+function insertAtCursor(text, offset = null) {
   const start = display.selectionStart ?? display.value.length;
   const end = display.selectionEnd ?? display.value.length;
 
   display.setRangeText(text, start, end, "end");
 
   const caret = start + (
-    Number.isInteger(caretOffset) ? caretOffset : text.length
+    Number.isInteger(offset) ? offset : text.length
   );
 
   display.focus();
   display.setSelectionRange(caret, caret);
-  screenResult.textContent = "";
+}
+
+function runNumericForMemory() {
+  const result = calculateExpression(display.value);
+
+  if (result.kind !== "numeric") {
+    throw new Error("메모리 기능은 숫자 계산에만 사용할 수 있습니다.");
+  }
+
+  return result.value;
+}
+
+function changeMemory(direction) {
+  try {
+    const value = runNumericForMemory();
+
+    if (memoryValue === null) memoryValue = 0;
+
+    memoryValue += direction * value;
+
+    memoryStatus.textContent = "M: " + formatNumber(memoryValue);
+  } catch (error) {
+    screenResult.textContent = error.message;
+  }
 }
 
 function toggleSign() {
@@ -1228,7 +1193,7 @@ function toggleSign() {
 
   if (!value) {
     insertAtCursor("-");
-  } else if (/^\-\(.+\)$/.test(value)) {
+  } else if (/^-\(.+\)$/.test(value)) {
     display.value = value.slice(2, -1);
   } else if (/^-\d+(?:\.\d+)?$/.test(value)) {
     display.value = value.slice(1);
@@ -1239,86 +1204,131 @@ function toggleSign() {
   display.focus();
 }
 
-function calculateMemoryChange(direction) {
-  try {
-    const result = calc(display.value);
+const keys = [
+  ["sin","insert","sin(","function"],
+  ["cos","insert","cos(","function"],
+  ["tan","insert","tan(","function"],
+  ["asin","insert","asin(","function"],
+  ["acos","insert","acos(","function"],
+  ["atan","insert","atan(","function"],
 
-    if (result.value === undefined) {
-      throw new Error("숫자 계산 결과만 메모리에 저장할 수 있습니다.");
-    }
+  ["log","insert","log(","function"],
+  ["ln","insert","ln(","function"],
+  ["x²","insert","^2","function"],
+  ["x³","insert","^3","function"],
+  ["xʸ","insert","^","function"],
+  ["y√x","insert","nthroot(","function"],
 
-    if (memoryValue === null) memoryValue = 0;
+  ["√x","insert","sqrt(","function"],
+  ["³√x","insert","nthroot(,3","function",8],
+  ["10ˣ","insert","10^(","function"],
+  ["eˣ","insert","e^(","function"],
+  ["1/x","insert","1/(","function"],
+  ["n!","insert","factorial(","function"],
 
-    memoryValue += direction * result.value;
-    memoryStatus.textContent = "M: " + formatNumber(memoryValue);
-  } catch {
-    screenResult.textContent = "메모리에 숫자 결과를 저장할 수 없습니다.";
-  }
-}
+  ["abs","insert","abs(","function"],
+  ["EXP","insert","*10^(","function"],
+  ["floor","insert","floor(","function"],
+  ["ceil","insert","ceil(","function"],
+  ["round","insert","round(","function"],
+  ["π","insert","pi","function"],
 
-function runKey(key) {
-  switch (key.action) {
-    case "insert":
-      insertAtCursor(key.value, key.offset);
-      break;
+  ["M+","memoryAdd","","utility"],
+  ["M−","memorySubtract","","utility"],
+  ["MR","memoryRecall","","utility"],
+  ["e","insert","e","function"],
+  ["(","insert","(","utility"],
+  [")","insert",")","utility"],
 
-    case "calculate":
-      calculateCurrent();
-      break;
+  ["7","insert","7","number"],
+  ["8","insert","8","number"],
+  ["9","insert","9","number"],
+  ["/","insert","/","operator"],
+  ["%","insert","/100","operator"],
+  ["^","insert","^","operator"],
 
-    case "clear":
-      display.value = "";
-      screenResult.textContent = "0";
-      display.focus();
-      break;
+  ["4","insert","4","number"],
+  ["5","insert","5","number"],
+  ["6","insert","6","number"],
+  ["*","insert","*","operator"],
+  ["±","sign","","operator"],
+  ["AC","clear","","danger"],
 
-    case "backspace": {
-      const start = display.selectionStart;
-      const end = display.selectionEnd;
+  ["1","insert","1","number"],
+  ["2","insert","2","number"],
+  ["3","insert","3","number"],
+  ["-","insert","-","operator"],
+  ["Ans","answer","","operator"],
+  ["C","backspace","","danger"],
 
-      if (start !== end) {
-        display.setRangeText("", start, end, "end");
-      } else if (start > 0) {
-        display.setRangeText("", start - 1, end, "end");
-      }
+  ["0","insert","0","number"],
+  [".","insert",".","number"],
+  ["+","insert","+","operator"],
+  ["=","calculate","","equal"]
+];
 
-      display.focus();
-      break;
-    }
-
-    case "sign":
-      toggleSign();
-      break;
-
-    case "answer":
-      insertAtCursor(String(lastAnswer));
-      break;
-
-    case "memoryAdd":
-      calculateMemoryChange(1);
-      break;
-
-    case "memorySubtract":
-      calculateMemoryChange(-1);
-      break;
-
-    case "memoryRecall":
-      if (memoryValue !== null) insertAtCursor(String(memoryValue));
-      else screenResult.textContent = "저장된 메모리가 없습니다.";
-      break;
-  }
-}
-
-for (const key of keyDefinitions) {
+for (const [label, action, value, cls, offset] of keys) {
   const button = document.createElement("button");
 
   button.type = "button";
-  button.className = "key";
+  button.className = "key " + (cls || "");
+  button.textContent = label;
 
-  if (key.cls) button.classList.add(key.cls);
+  button.addEventListener("click", () => {
+    switch (action) {
+      case "insert":
+        insertAtCursor(value, offset);
+        break;
 
-  button.textContent = key.label;
-  button.addEventListener("click", () => runKey(key));
+      case "calculate":
+        calculateCurrent();
+        break;
+
+      case "clear":
+        display.value = "";
+        screenResult.textContent = "0";
+        display.focus();
+        break;
+
+      case "backspace": {
+        const start = display.selectionStart;
+        const end = display.selectionEnd;
+
+        if (start !== end) {
+          display.setRangeText("", start, end, "end");
+        } else if (start > 0) {
+          display.setRangeText("", start - 1, end, "end");
+        }
+
+        display.focus();
+        break;
+      }
+
+      case "sign":
+        toggleSign();
+        break;
+
+      case "answer":
+        insertAtCursor(String(lastAnswer));
+        break;
+
+      case "memoryAdd":
+        changeMemory(1);
+        break;
+
+      case "memorySubtract":
+        changeMemory(-1);
+        break;
+
+      case "memoryRecall":
+        if (memoryValue !== null) {
+          insertAtCursor(String(memoryValue));
+        } else {
+          screenResult.textContent = "저장된 메모리가 없습니다.";
+        }
+        break;
+    }
+  });
 
   keypad.appendChild(button);
 }
@@ -1335,23 +1345,18 @@ document.getElementById("radButton").addEventListener("click", () => {
   document.getElementById("degButton").classList.remove("active");
 });
 
+document.getElementById("clearHistory").addEventListener("click", () => {
+  history = [];
+  historyList.innerHTML =
+    '<div class="empty">계산 기록이 없습니다.</div>';
+});
+
 display.addEventListener("keydown", event => {
   if (event.key === "Enter") {
     event.preventDefault();
     calculateCurrent();
   }
 });
-
-document.getElementById("clearHistory").addEventListener("click", () => {
-  history = [];
-  historyList.innerHTML = '<div class="empty">계산 기록이 없습니다.</div>';
-});
-
-display.addEventListener("input", () => {
-  // 직접 입력할 때는 자동 호출하지 않습니다.
-  // "=" 버튼이나 Enter를 눌렀을 때만 계산합니다.
-});
-
 </script>
 </body>
 </html>
