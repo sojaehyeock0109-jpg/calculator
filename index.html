@@ -23,198 +23,49 @@ window.MathJax = {
 
 <style>
 * { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  padding: 18px;
-  font-family: Arial, "Malgun Gothic", sans-serif;
-  color: #172033;
-  background: #f2f5fb;
-}
-
-.layout {
-  width: 100%;
-  max-width: 1450px;
-  margin: auto;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  align-items: stretch;
-}
-
-.panel {
-  min-width: 0;
-  padding: 22px;
-  border-radius: 18px;
-  background: white;
-  box-shadow: 0 5px 24px #1720330c;
-}
-
-h1 { font-size: 25px; margin: 0 0 10px; }
-p { line-height: 1.65; }
-
-.muted, .examples {
-  color: #64748b;
-  font-size: 14px;
-  line-height: 1.9;
-}
-
-input, textarea, button { font: inherit; }
-
-input, textarea {
-  width: 100%;
-  padding: 13px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  color: #172033;
-  background: white;
-}
-
-button {
-  padding: 11px 14px;
-  border: 0;
-  border-radius: 9px;
-  cursor: pointer;
-}
-
-.primary { color: white; background: #2563eb; }
-.secondary { color: #334155; background: #e9eef6; }
-
-.editor {
-  border: 1px solid #dbe3ee;
-  border-radius: 12px;
-  padding: 10px;
-}
-
-#mathInput {
-  display: block;
-  width: 100%;
-  height: 155px;
-  padding: 10px;
-  border: 0;
-  outline: none;
-  resize: vertical;
-  font-size: 21px;
-  line-height: 1.7;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.keyboard-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 20px 0 12px;
-}
-
-.tabs, .angles { display: flex; gap: 5px; }
-
-.tab, .angle {
-  padding: 8px 11px;
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-.tab.active { background: #eaf1ff; color: #2563eb; }
-.angle.active { background: #475569; color: white; }
-
-.key-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 7px;
-}
-
-.key {
-  min-width: 0;
-  min-height: 43px;
-  padding: 7px 2px;
-  background: #edf1f7;
-  border: 1px solid #dce3ed;
-  color: #1e293b;
-}
-
-.key.operator { color: #1d4ed8; background: #e8f0ff; }
-.key.func { color: #6d28d9; background: #f1eafe; }
-
-.key-footer {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-#rightInput { margin-top: 16px; }
-
-.example {
-  display: block;
-  padding: 3px 0;
-  background: transparent;
-  color: #526581;
-  text-align: left;
-}
-
-.example:hover { color: #2563eb; }
-
-.result {
-  min-height: 130px;
-  margin-top: 22px;
-  padding: 20px;
-  border-radius: 12px;
-  background: #eff6ff;
-  overflow-wrap: anywhere;
-}
-
-#formula {
-  color: #526581;
-  line-height: 1.7;
-  overflow-wrap: anywhere;
-}
-
-#answer {
-  font-size: 16px;
-  line-height: 1.9;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
-#answer mjx-container {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.status { font-weight: 700; }
-
-@media (max-width: 650px) {
-  body { padding: 10px; }
-  .layout { grid-template-columns: 1fr; gap: 14px; }
-  .panel { padding: 16px; }
-  .key-grid { gap: 5px; }
-  .key { min-height: 39px; font-size: 14px; }
-}
+body { margin:0; padding:18px; font-family:Arial,"Malgun Gothic",sans-serif; color:#172033; background:#f2f5fb; }
+.layout { width:100%; max-width:1450px; margin:auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; align-items:stretch; }
+.panel { min-width:0; padding:22px; border-radius:18px; background:white; box-shadow:0 5px 24px #1720330c; }
+h1 { font-size:25px; margin:0 0 10px; }
+p { line-height:1.65; }
+.muted,.examples { color:#64748b; font-size:14px; line-height:1.9; }
+input,textarea,button { font:inherit; }
+input,textarea { width:100%; padding:13px; border:1px solid #cbd5e1; border-radius:10px; color:#172033; background:white; }
+button { padding:11px 14px; border:0; border-radius:9px; cursor:pointer; }
+.primary { color:white; background:#2563eb; }
+.secondary { color:#334155; background:#e9eef6; }
+.editor { border:1px solid #dbe3ee; border-radius:12px; padding:10px; }
+#mathInput { display:block; width:100%; height:155px; padding:10px; border:0; outline:none; resize:vertical; font-size:21px; line-height:1.7; }
+.actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.keyboard-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin:20px 0 12px; }
+.tabs,.angles { display:flex; gap:5px; }
+.tab,.angle { padding:8px 11px; background:#f1f5f9; color:#64748b; }
+.tab.active { background:#eaf1ff; color:#2563eb; }
+.angle.active { background:#475569; color:white; }
+.key-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px; }
+.key { min-width:0; min-height:43px; padding:7px 2px; background:#edf1f7; border:1px solid #dce3ed; color:#1e293b; }
+.key.operator { color:#1d4ed8; background:#e8f0ff; }
+.key.func { color:#6d28d9; background:#f1eafe; }
+.key-footer { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+#rightInput { margin-top:16px; }
+.example { display:block; padding:3px 0; background:transparent; color:#526581; text-align:left; }
+.result { min-height:130px; margin-top:22px; padding:20px; border-radius:12px; background:#eff6ff; overflow-wrap:anywhere; }
+#formula { color:#526581; line-height:1.7; overflow-wrap:anywhere; }
+#answer { font-size:16px; line-height:1.9; overflow-wrap:anywhere; white-space:pre-wrap; }
+#answer mjx-container { max-width:100%; overflow-x:auto; overflow-y:hidden; }
+.status { font-weight:700; }
+@media(max-width:650px) { body{padding:10px} .layout{grid-template-columns:1fr;gap:14px} .panel{padding:16px} .key-grid{gap:5px} .key{min-height:39px;font-size:14px} }
 </style>
 </head>
 
 <body>
 <div class="layout">
-
-<!-- 왼쪽: 수식 입력기 -->
 <section class="panel">
   <h1>수식 입력기</h1>
   <p class="muted">수식과 방정식을 입력하고 계산하세요.</p>
 
   <div class="editor">
-    <textarea id="mathInput"
-      placeholder="예: sqrt(16) + 3^2&#10;또는 x^2 + 4 = 16"
-      aria-label="수식 입력"
-      spellcheck="false"></textarea>
+    <textarea id="mathInput" placeholder="예: sqrt(16) + 3^2&#10;또는 x^2 + 4 = 16" spellcheck="false"></textarea>
   </div>
 
   <div class="actions">
@@ -241,19 +92,13 @@ button {
   </div>
 </section>
 
-<!-- 오른쪽: 입력창 하나와 계산 버튼, 결과 하나 -->
 <section class="panel">
   <h1>공학 계산기</h1>
   <p class="muted">수식이나 간단한 자연어 수학 표현을 입력하세요.</p>
 
   <form id="calcForm">
-    <input id="rightInput"
-      placeholder="예: x세제곱 = 8"
-      autocomplete="off">
-
-    <div class="actions">
-      <button class="primary" type="submit">계산하기</button>
-    </div>
+    <input id="rightInput" placeholder="예: x세제곱 = 8" autocomplete="off">
+    <div class="actions"><button class="primary" type="submit">계산하기</button></div>
   </form>
 
   <div class="examples">
@@ -283,13 +128,10 @@ const statusText = document.getElementById("status");
 const formulaText = document.getElementById("formula");
 const answerText = document.getElementById("answer");
 const keyGrid = document.getElementById("keyGrid");
-
 let angleMode = "deg";
 
-function showResult(status, formula = "", answer = "") {
-  if (window.MathJax?.typesetClear) {
-    window.MathJax.typesetClear([answerText]);
-  }
+function showResult(status, formula="", answer="") {
+  if (window.MathJax?.typesetClear) window.MathJax.typesetClear([answerText]);
   statusText.textContent = status;
   formulaText.textContent = formula;
   answerText.textContent = answer;
@@ -305,286 +147,339 @@ function normalizeExpression(raw) {
   if (raw.length > 300) throw new Error("수식은 300자 이하여야 합니다.");
 
   let s = raw.trim().toLowerCase()
-    .replace(/×/g, "*")
-    .replace(/÷/g, "/")
-    .replace(/[−–]/g, "-")
-    .replace(/²/g, "^2")
-    .replace(/³/g, "^3");
+    .replace(/×/g,"*").replace(/÷/g,"/")
+    .replace(/[−–]/g,"-").replace(/²/g,"^2").replace(/³/g,"^3");
 
-  // 불필요한 표현 제거
   const fillers = [
     /계산해\s*주세요/g, /계산해\s*줘/g,
     /구해\s*주세요/g, /구해\s*줘/g,
     /풀어\s*주세요/g, /풀어\s*줘/g,
     /값을/g, /결과를/g, /답을/g
   ];
+  for (const re of fillers) s = s.replace(re,"");
 
-  for (const pattern of fillers) s = s.replace(pattern, "");
-
-  // 2의 3제곱, 2의세제곱, 3의 제곱
-  s = s.replace(
-    /(\d+(?:\.\d+)?)\s*의\s*(\d+(?:\.\d+)?)\s*제곱/g,
-    "($1^$2)"
-  );
-  s = s.replace(
-    /(\d+(?:\.\d+)?)\s*의\s*세제곱/g,
-    "($1^3)"
-  );
-  s = s.replace(
-    /(\d+(?:\.\d+)?)\s*의\s*제곱/g,
-    "($1^2)"
-  );
-
-  // 2분의 3 = 3/2
-  s = s.replace(
-    /(\d+(?:\.\d*)?|\.\d+)\s*분의\s*(\d+(?:\.\d*)?|\.\d+)/g,
-    "($2/$1)"
-  );
+  s = s.replace(/(\d+(?:\.\d+)?)\s*의\s*(\d+(?:\.\d+)?)\s*제곱/g,"($1^$2)");
+  s = s.replace(/(\d+(?:\.\d+)?)\s*의\s*세제곱/g,"($1^3)");
+  s = s.replace(/(\d+(?:\.\d+)?)\s*의\s*제곱/g,"($1^2)");
+  s = s.replace(/(\d+(?:\.\d*)?|\.\d+)\s*분의\s*(\d+(?:\.\d*)?|\.\d+)/g,"($2/$1)");
 
   const words = [
-    ["자연로그", "ln"],
-    ["제곱근", "sqrt"],
-    ["코사인", "cos"],
-    ["탄젠트", "tan"],
-    ["사인", "sin"],
-    ["세제곱", "^3"],
-    ["제곱", "^2"],
-    ["루트", "sqrt"],
-    ["로그", "log"],
-    ["파이", "pi"],
-    ["더하기", "+"],
-    ["플러스", "+"],
-    ["빼기", "-"],
-    ["마이너스", "-"],
-    ["곱하기", "*"],
-    ["나누기", "/"],
-    ["의", ""],
-    ["도", ""]
+    ["자연로그","ln"],["제곱근","sqrt"],["코사인","cos"],
+    ["탄젠트","tan"],["사인","sin"],["세제곱","^3"],
+    ["제곱","^2"],["루트","sqrt"],["로그","log"],["파이","pi"],
+    ["더하기","+"],["플러스","+"],["빼기","-"],
+    ["마이너스","-"],["곱하기","*"],["나누기","/"],
+    ["의",""],["도",""]
   ];
+  for (const [word,replacement] of words) s = s.split(word).join(replacement);
 
-  for (const [word, replacement] of words) {
-    s = s.split(word).join(replacement);
-  }
-
-  // 예: sqrt 16 -> sqrt(16)
-  s = s.replace(
-    /\b(sqrt|sin|cos|tan|log|ln)\s+([+-]?\d+(?:\.\d+)?)/g,
-    "$1($2)"
-  );
-
+  s = s.replace(/\b(sqrt|sin|cos|tan|log|ln)\s+([+-]?\d+(?:\.\d+)?)/g,"$1($2)");
   return s.trim();
 }
 
-const knownNames = new Set([
-  "sqrt", "sin", "cos", "tan", "log", "ln", "pi", "e"
-]);
+const knownFunctions = new Set(["sqrt","sin","cos","tan","log","ln","pi","e"]);
 
-function validateNumericExpression(s) {
-  if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(s)) {
-    throw new Error("지원하지 않는 문자가 포함되어 있습니다.");
-  }
-
-  const names = s.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
-  const unknown = names.filter(name => !knownNames.has(name));
-
-  if (unknown.length) {
-    throw new Error("미지수가 포함되어 있습니다. 방정식은 = 기호를 입력해 주세요.");
-  }
+function formatNumber(n) {
+  if (!Number.isFinite(n)) throw new Error("유효한 숫자 결과가 아닙니다.");
+  if (Math.abs(n) < 1e-11) return "0";
+  return Number(n.toPrecision(9)).toString();
 }
 
-function prepareTrig(s) {
-  if (angleMode !== "deg") return s;
+function gcd(a,b) {
+  a=Math.abs(Math.round(a)); b=Math.abs(Math.round(b));
+  while (b) [a,b]=[b,a%b];
+  return a || 1;
+}
 
-  return s.replace(
-    /\b(sin|cos|tan)\(([^()]*)\)/g,
-    (whole, fn, arg) => {
-      if (/^[0-9.+\-*/\s]+$/.test(arg)) {
-        return `${fn}((${arg})*pi/180)`;
-      }
-      return whole;
+// 정수 n에 대해 sqrt(n) = outside * sqrt(inside)로 간단히 정리
+function simplifySqrt(n) {
+  let inside=Math.round(n), outside=1;
+  for (let i=2; i*i<=inside && i<=100000; i++) {
+    while (inside % (i*i) === 0) {
+      inside /= i*i;
+      outside *= i;
     }
-  );
+  }
+  return {outside,inside};
 }
 
-function formatNumber(value) {
-  if (!Number.isFinite(value)) throw new Error("유효한 숫자 결과가 아닙니다.");
-  if (Math.abs(value) < 1e-12) return "0";
-  return Number(value.toPrecision(10)).toString();
+function isNearInteger(n) {
+  return Math.abs(n-Math.round(n)) < 1e-8;
 }
 
-function evaluateNumeric(raw) {
-  const expression = prepareTrig(normalizeExpression(raw));
+function toNumeric(expr) {
+  const t = window.nerdamer(String(expr)).evaluate().text("decimals");
+  const n = Number(t);
+  if (!Number.isFinite(n)) throw new Error("계수를 숫자로 계산할 수 없습니다.");
+  return n;
+}
 
-  if (!expression) throw new Error("수식을 입력해 주세요.");
-  if (expression.includes("=")) throw new Error("방정식 형식을 확인해 주세요.");
+function getPolynomialCoefficients(expression, variable) {
+  const expanded = window.nerdamer(expression).expand().toString();
+  const vector = window.nerdamer.coeffs(expanded, variable);
 
-  validateNumericExpression(expression);
+  let elements;
+  if (typeof vector.toArray === "function") elements = vector.toArray();
+  else if (Array.isArray(vector.elements)) elements = vector.elements;
+  else throw new Error("다항식 계수를 추출할 수 없습니다.");
 
-  let result;
-  try {
-    result = Number(window.nerdamer(expression).evaluate().text("decimals"));
-  } catch {
-    throw new Error("수식을 계산하지 못했습니다. 연산자와 괄호를 확인해 주세요.");
+  const coefficients = elements.map(toNumeric);
+
+  while (coefficients.length > 1 &&
+         Math.abs(coefficients[coefficients.length-1]) < 1e-10) {
+    coefficients.pop();
+  }
+  return coefficients;
+}
+
+function quadraticAnswer(a,b,c,variable) {
+  let D=b*b-4*a*c;
+  if (Math.abs(D)<1e-10) D=0;
+
+  if (D < 0) return {answer:"실수 범위에서 해가 없습니다."};
+
+  const x1=(-b+Math.sqrt(D))/(2*a);
+  const x2=(-b-Math.sqrt(D))/(2*a);
+  const unique=Math.abs(x1-x2)<1e-8 ? [x1] : [x1,x2];
+
+  const integerCoefficients=[a,b,c,D].every(isNearInteger);
+  let exactLines=[];
+  let approximateLines=[];
+
+  // 판별식이 정수 계수의 완전제곱이면 분수 대신 정수 또는 소수로 표시
+  if (integerCoefficients) {
+    const ai=Math.round(a), bi=Math.round(b), ci=Math.round(c);
+    const Di=Math.max(0,Math.round(D));
+    const sd=Math.round(Math.sqrt(Di));
+    const perfectSquare=sd*sd===Di;
+
+    if (perfectSquare) {
+      for (const x of unique) {
+        if (isNearInteger(x)) {
+          exactLines.push(`\\(${variable}=${Math.round(x)}\\)`);
+        } else {
+          exactLines.push(`\\(${variable}\\approx${formatNumber(x)}\\)`);
+        }
+      }
+      return {answer:"해:\n"+exactLines.join("\n")};
+    }
+
+    // 무리근: 제곱근 안의 제곱인수를 정리
+    const {outside,inside}=simplifySqrt(Di);
+    const denominator=2*ai;
+    const base=-bi;
+
+    if (base===0) {
+      const common=gcd(outside,denominator);
+      const k=outside/common;
+      const den=denominator/common;
+
+      let radical = k===1 ? `\\sqrt{${inside}}` : `${k}\\sqrt{${inside}}`;
+      if (den!==1) radical=`\\frac{${radical}}{${den}}`;
+
+      exactLines.push(`\\(${variable}=\\pm ${radical}\\)`);
+    } else {
+      const common=gcd(gcd(Math.abs(base),outside),denominator);
+      const b0=base/common;
+      const k=outside/common;
+      const den=denominator/common;
+
+      let radical=k===1 ? `\\sqrt{${inside}}` : `${k}\\sqrt{${inside}}`;
+      let numerator;
+
+      if (b0===0) numerator=`\\pm ${radical}`;
+      else numerator=`${b0<0?"-"+Math.abs(b0):b0}\\pm ${radical}`;
+
+      exactLines.push(
+        den===1
+          ? `\\(${variable}=${numerator}\\)`
+          : `\\(${variable}=\\frac{${numerator}}{${den}}\\)`
+      );
+    }
+
+    approximateLines=unique.map(x=>`\\(${variable}\\approx${formatNumber(x)}\\)`);
+    return {
+      answer:"정확한 해:\n"+exactLines.join("\n")+
+        "\n\n소수 근삿값:\n"+approximateLines.join("\n")
+    };
   }
 
+  // 소수 계수 등은 거대한 분수로 만들지 않고 소수 결과로만 표시
   return {
-    expression,
-    result: formatNumber(result)
+    answer:"해:\n"+unique.map(x=>`\\(${variable}\\approx${formatNumber(x)}\\)`).join("\n")
   };
 }
 
 function splitRoots(text) {
-  let s = String(text).trim();
+  let s=String(text).trim();
+  if ((s.startsWith("{")&&s.endsWith("}")) ||
+      (s.startsWith("[")&&s.endsWith("]"))) s=s.slice(1,-1);
 
-  if (
-    (s.startsWith("{") && s.endsWith("}")) ||
-    (s.startsWith("[") && s.endsWith("]"))
-  ) {
-    s = s.slice(1, -1);
-  }
-
-  const roots = [];
-  let current = "";
-  let depth = 0;
+  const roots=[];
+  let current="", depth=0;
 
   for (const ch of s) {
     if ("([{".includes(ch)) depth++;
-    if (")] }".replace(/ /g, "").includes(ch)) depth--;
+    if (")]}".includes(ch)) depth--;
 
-    if (ch === "," && depth === 0) {
+    if (ch==="," && depth===0) {
       if (current.trim()) roots.push(current.trim());
-      current = "";
-    } else {
-      current += ch;
-    }
+      current="";
+    } else current+=ch;
   }
-
   if (current.trim()) roots.push(current.trim());
   return roots;
 }
 
-function evaluateRoot(root) {
+function numericRealRoot(root) {
+  if (/(^|[^a-z])i([^a-z]|$)/i.test(root)) return null;
   try {
-    const valueText = window.nerdamer(root).evaluate().text("decimals");
-
-    // 복소수 해는 제외합니다.
+    const valueText=window.nerdamer(root).evaluate().text("decimals");
     if (/(^|[^a-z])i([^a-z]|$)/i.test(valueText)) return null;
-    if (/[+-]?\d(?:\.\d+)?i\b/i.test(valueText)) return null;
-    if (/infinity|undefined|nan|unsolved/i.test(valueText)) return null;
-
-    const value = Number(valueText);
-    if (!Number.isFinite(value)) return null;
-
-    return value;
-  } catch {
-    return null;
-  }
+    const value=Number(valueText);
+    return Number.isFinite(value) ? value : null;
+  } catch { return null; }
 }
 
 function solveEquation(raw) {
-  const expression = normalizeExpression(raw);
+  const expression=normalizeExpression(raw);
 
-  if ((expression.match(/=/g) || []).length !== 1) {
+  if ((expression.match(/=/g)||[]).length!==1) {
     throw new Error("등호가 하나인 방정식만 지원합니다.");
   }
 
-  const [left, right] = expression.split("=").map(part => part.trim());
-  if (!left || !right) throw new Error("등호 양쪽에 식을 입력해 주세요.");
+  const [left,right]=expression.split("=").map(s=>s.trim());
+  if (!left||!right) throw new Error("등호 양쪽의 식을 확인해 주세요.");
 
-  if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(left + right)) {
-    throw new Error("방정식에 지원하지 않는 문자가 포함되어 있습니다.");
+  if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(left+right)) {
+    throw new Error("방정식에 지원하지 않는 문자가 있습니다.");
   }
 
-  const ids = (left + " " + right).match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
-  const variables = [...new Set(ids.filter(name => !knownNames.has(name)))];
+  const identifiers=(left+" "+right).match(/[a-zA-Z_][a-zA-Z0-9_]*/g)||[];
+  const variables=[...new Set(identifiers.filter(n=>!knownFunctions.has(n)))];
 
-  if (variables.length !== 1) {
-    throw new Error(
-      variables.length === 0
-        ? "방정식에서 미지수를 찾지 못했습니다."
-        : "현재는 미지수 하나인 방정식만 지원합니다."
-    );
+  if (variables.length!==1) {
+    throw new Error(variables.length===0
+      ? "방정식에서 미지수를 찾지 못했습니다."
+      : "현재는 미지수 하나인 방정식만 지원합니다.");
   }
 
-  const variable = variables[0];
-  const residual = `(${left})-(${right})`;
+  const variable=variables[0];
+  const residual=`(${left})-(${right})`;
 
+  // 우선 다항식 계수를 추출해 1차·2차 방정식은 공식을 직접 적용
+  try {
+    const coefficients=getPolynomialCoefficients(residual,variable);
+    const degree=coefficients.length-1;
+
+    if (degree===0) {
+      return {expression,answer:Math.abs(coefficients[0])<1e-10
+        ? "항등식입니다. 모든 실수가 해일 수 있습니다."
+        : "해가 없습니다."};
+    }
+
+    if (degree===1) {
+      const [c,b]=coefficients;
+      const root=-c/b;
+
+      if (!Number.isFinite(root)) throw new Error("해를 구할 수 없습니다.");
+
+      return {
+        expression,
+        answer:isNearInteger(root)
+          ? `해:\n\\(${variable}=${Math.round(root)}\\)`
+          : `해:\n\\(${variable}\\approx${formatNumber(root)}\\)`
+      };
+    }
+
+    if (degree===2) {
+      const [c,b,a]=coefficients;
+      return {expression,...quadraticAnswer(a,b,c,variable)};
+    }
+  } catch (error) {
+    if (error.message && error.message.includes("실수 범위")) {
+      return {expression,answer:error.message};
+    }
+    // 계수 추출이 불가능하면 아래 일반 솔버를 시도
+  }
+
+  // 3차 이상은 솔버 결과에서 복소근을 제외하고 실수근만 사용
   let solution;
   try {
-    solution = window.nerdamer.solve(residual, variable);
+    solution=window.nerdamer.solve(residual,variable);
   } catch {
-    throw new Error("방정식의 해를 구하지 못했습니다.");
+    throw new Error("이 방정식은 현재 풀이 엔진에서 처리하지 못했습니다.");
   }
 
-  const solutionText =
-    solution && typeof solution.text === "function"
-      ? solution.text()
-      : String(solution);
+  const roots=splitRoots(String(solution));
+  const real=[];
 
-  if (/unsolved|undefined|nan/i.test(solutionText)) {
-    throw new Error("이 방정식은 현재 풀이 엔진에서 지원하지 않습니다.");
+  for (const root of roots) {
+    const value=numericRealRoot(root);
+    if (value===null) continue;
+    if (real.some(r=>Math.abs(r.value-value)<1e-7)) continue;
+    real.push({root,value});
   }
 
-  const candidates = splitRoots(solutionText);
-  if (!candidates.length) {
-    throw new Error("방정식의 해를 구하지 못했습니다.");
-  }
+  if (!real.length) return {expression,answer:"실수 범위에서 해를 찾지 못했습니다."};
 
-  // 평가 가능한 실수 해만 남기고 중복 근을 제거합니다.
-  const realRoots = [];
+  const exact=[];
+  const approximate=[];
 
-  for (const root of candidates) {
-    const numeric = evaluateRoot(root);
-    if (numeric === null) continue;
-
-    if (realRoots.some(item => Math.abs(item.numeric - numeric) < 1e-8)) {
+  for (const item of real) {
+    if (isNearInteger(item.value)) {
+      exact.push(`\\(${variable}=${Math.round(item.value)}\\)`);
       continue;
     }
 
-    let tex;
-    try {
-      tex = window.nerdamer(root).toTeX();
-    } catch {
-      tex = root;
+    // Solver가 실제 간단한 근호식을 반환한 경우에만 정확한 근호를 표시
+    const looksRadical=/sqrt|nthroot|\^\s*\(?\s*1\/\d+/i.test(item.root);
+
+    if (looksRadical && !/\/\d{5,}/.test(item.root)) {
+      try {
+        exact.push(`\\(${variable}=${window.nerdamer(item.root).toTeX()}\\)`);
+      } catch {}
+      approximate.push(`\\(${variable}\\approx${formatNumber(item.value)}\\)`);
+    } else {
+      exact.push(`\\(${variable}\\approx${formatNumber(item.value)}\\)`);
     }
-
-    const hasRadical =
-      /sqrt|\\sqrt|\^\s*\(?\s*1\s*\/\s*\d+\s*\)?/i.test(root + " " + tex);
-
-    realRoots.push({
-      root,
-      tex,
-      numeric,
-      hasRadical
-    });
   }
 
-  if (!realRoots.length) {
-    return {
-      expression,
-      answer: "실수 범위에서 해가 없습니다."
-    };
+  let answer="해:\n"+[...new Set(exact)].join("\n");
+  if (approximate.length) {
+    answer+="\n\n소수 근삿값:\n"+[...new Set(approximate)].join("\n");
   }
+  return {expression,answer};
+}
 
-  // 정확한 해는 항상 표시합니다.
-  const exact = realRoots.map(item =>
-    `\\(${variable} = ${item.tex}\\)`
-  );
-
-  let answer = "정확한 해:\n" + exact.join("\n");
-
-  // 근호가 포함된 정확한 해에 대해서만 소수 근삿값을 추가합니다.
-  const radicalRoots = realRoots.filter(item => item.hasRadical);
-
-  if (radicalRoots.length) {
-    const approximate = radicalRoots.map(item =>
-      `\\(${variable} \\approx ${formatNumber(item.numeric)}\\)`
-    );
-
-    answer += "\n\n소수 근삿값:\n" + approximate.join("\n");
+function validateNumeric(s) {
+  if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(s)) {
+    throw new Error("지원하지 않는 문자가 포함되어 있습니다.");
   }
+  const ids=s.match(/[a-zA-Z_][a-zA-Z0-9_]*/g)||[];
+  const unknown=ids.filter(n=>!knownFunctions.has(n));
+  if (unknown.length) throw new Error("미지수가 포함되어 있습니다. 방정식은 = 기호를 입력해 주세요.");
+}
 
-  return { expression, answer };
+function prepareTrig(s) {
+  if (angleMode!=="deg") return s;
+  return s.replace(/\b(sin|cos|tan)\(([^()]*)\)/g,(whole,fn,arg)=>{
+    if (/^[0-9.+\-*/\s]+$/.test(arg)) return `${fn}((${arg})*pi/180)`;
+    return whole;
+  });
+}
+
+function evaluateNumeric(raw) {
+  const expression=prepareTrig(normalizeExpression(raw));
+  if (!expression) throw new Error("수식을 입력해 주세요.");
+  if (expression.includes("=")) throw new Error("방정식 형식을 확인해 주세요.");
+
+  validateNumeric(expression);
+
+  const value=Number(window.nerdamer(expression).evaluate().text("decimals"));
+  if (!Number.isFinite(value)) throw new Error("유효한 숫자 결과가 아닙니다.");
+
+  return {expression,result:formatNumber(value)};
 }
 
 async function calculate(raw) {
@@ -592,37 +487,25 @@ async function calculate(raw) {
     if (!raw.trim()) throw new Error("수식을 입력해 주세요.");
 
     if (raw.includes("=")) {
-      const result = solveEquation(raw);
-      showResult(
-        "방정식 풀이 완료",
-        "입력한 방정식: " + result.expression,
-        result.answer
-      );
+      const r=solveEquation(raw);
+      showResult("방정식 풀이 완료","입력한 방정식: "+r.expression,r.answer);
       await renderMath();
       return;
     }
 
-    const result = evaluateNumeric(raw);
-
-    showResult(
-      "계산 완료",
-      "변환한 수식: " + result.expression,
-      `\\[${result.expression.replace(/\*/g, " \\times ")} = ${result.result}\\]`
-    );
-
+    const r=evaluateNumeric(raw);
+    showResult("계산 완료","변환한 수식: "+r.expression,`\\[${r.expression.replace(/\*/g," \\times ")}=${r.result}\\]`);
     await renderMath();
   } catch (error) {
-    showResult("계산할 수 없습니다.", error.message, "");
+    showResult("계산할 수 없습니다.",error.message,"");
   }
 }
 
-function showResult(status, formula = "", answer = "") {
-  if (window.MathJax?.typesetClear) {
-    window.MathJax.typesetClear([answerText]);
-  }
-  statusText.textContent = status;
-  formulaText.textContent = formula;
-  answerText.textContent = answer;
+function showResult(status,formula="",answer="") {
+  if (window.MathJax?.typesetClear) window.MathJax.typesetClear([answerText]);
+  statusText.textContent=status;
+  formulaText.textContent=formula;
+  answerText.textContent=answer;
 }
 
 async function renderMath() {
@@ -631,118 +514,58 @@ async function renderMath() {
   }
 }
 
-document.getElementById("calculateLeft").addEventListener("click", () => {
-  calculate(mathInput.value);
-});
+document.getElementById("calculateLeft").addEventListener("click",()=>calculate(mathInput.value));
+calcForm.addEventListener("submit",e=>{e.preventDefault();calculate(rightInput.value);});
+document.querySelectorAll(".example").forEach(b=>b.addEventListener("click",()=>{rightInput.value=b.dataset.example;}));
 
-calcForm.addEventListener("submit", event => {
-  event.preventDefault();
-  calculate(rightInput.value);
-});
-
-document.querySelectorAll(".example").forEach(button => {
-  button.addEventListener("click", () => {
-    rightInput.value = button.dataset.example;
-    rightInput.focus();
-  });
-});
-
-const layouts = {
-  main: [
-    ["(", "("], [")", ")"], ["x²", "^2"], ["xʸ", "^"], ["√", "sqrt("],
-    ["7","7"],["8","8"],["9","9"],["÷","/"],["a/b","()/()",1],
-    ["4","4"],["5","5"],["6","6"],["×","*"],["π","pi"],
-    ["1","1"],["2","2"],["3","3"],["−","-"],["+","+"],
-    ["0","0"],[".","."],["sin","sin("],["cos","cos("],["tan","tan("],
-    ["x","x"],["=","="],["y","y"],["z","z"],["^3","^3"]
-  ],
-  letters: [
-    ["x","x"],["y","y"],["z","z"],["a","a"],["b","b"],
-    ["c","c"],["m","m"],["t","t"],["V","V"],["I","I"],
-    ["R","R"],["P","P"],["L","L"],["C","C"],["F","F"],
-    ["(","("],[")",")"],["=","="],["+","+"],["−","-"],
-    ["×","*"],["÷","/"],["^","^"],["π","pi"],[".","."]
-  ],
-  functions: [
-    ["sin(","sin("],["cos(","cos("],["tan(","tan("],
-    ["√","sqrt("],["log(","log("],["ln(","ln("],
-    ["π","pi"],["e","e"],["x²","^2"],["xʸ","^"],
-    ["(","("],[")",")"],["=","="],["+","+"],["−","-"],
-    ["×","*"],["÷","/"],["a/b","()/()",1],["x","x"],["^3","^3"]
-  ]
+const layouts={
+  main:[["(","("],[")",")"],["x²","^2"],["xʸ","^"],["√","sqrt("],["7","7"],["8","8"],["9","9"],["÷","/"],["a/b","()/()",1],["4","4"],["5","5"],["6","6"],["×","*"],["π","pi"],["1","1"],["2","2"],["3","3"],["−","-"],["+","+"],["0","0"],[".","."],["sin","sin("],["cos","cos("],["tan","tan("],["x","x"],["=","="],["y","y"],["z","z"],["^3","^3"]],
+  letters:[["x","x"],["y","y"],["z","z"],["a","a"],["b","b"],["c","c"],["m","m"],["t","t"],["V","V"],["I","I"],["R","R"],["P","P"],["L","L"],["C","C"],["F","F"],["(","("],[")",")"],["=","="],["+","+"],["−","-"],["×","*"],["÷","/"],["^","^"],["π","pi"],[".","." ]],
+  functions:[["sin(","sin("],["cos(","cos("],["tan(","tan("],["√","sqrt("],["log(","log("],["ln(","ln("],["π","pi"],["e","e"],["x²","^2"],["xʸ","^"],["(","("],[")",")"],["=","="],["+","+"],["−","-"],["×","*"],["÷","/"],["a/b","()/()",1],["x","x"],["^3","^3"]]
 };
 
-function insertAtCursor(text, offset) {
-  const start = mathInput.selectionStart ?? mathInput.value.length;
-  const end = mathInput.selectionEnd ?? mathInput.value.length;
-
-  mathInput.setRangeText(text, start, end, "end");
-  const caret = start + (Number.isInteger(offset) ? offset : text.length);
-
+function insertAtCursor(text,offset) {
+  const start=mathInput.selectionStart??mathInput.value.length;
+  const end=mathInput.selectionEnd??mathInput.value.length;
+  mathInput.setRangeText(text,start,end,"end");
+  const caret=start+(Number.isInteger(offset)?offset:text.length);
   mathInput.focus();
-  mathInput.setSelectionRange(caret, caret);
+  mathInput.setSelectionRange(caret,caret);
 }
 
 function renderKeys(tab) {
   keyGrid.replaceChildren();
-
-  for (const [label, value, offset] of layouts[tab]) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "key";
-    button.textContent = label;
-
-    if (["+", "-", "*", "/", "^", "="].includes(value)) {
-      button.classList.add("operator");
-    }
-
-    if (["sqrt(", "sin(", "cos(", "tan(", "pi", "log(", "ln("].includes(value)) {
-      button.classList.add("func");
-    }
-
-    button.addEventListener("click", () => insertAtCursor(value, offset));
-    keyGrid.appendChild(button);
+  for (const [label,value,offset] of layouts[tab]) {
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="key";
+    b.textContent=label;
+    if (["+","-","*","/","^","="].includes(value)) b.classList.add("operator");
+    if (["sqrt(","sin(","cos(","tan(","pi","log(","ln("].includes(value)) b.classList.add("func");
+    b.addEventListener("click",()=>insertAtCursor(value,offset));
+    keyGrid.appendChild(b);
   }
-
-  document.querySelectorAll(".tab").forEach(button => {
-    button.classList.toggle("active", button.dataset.tab === tab);
-  });
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
 }
 
-document.querySelectorAll(".tab").forEach(button => {
-  button.addEventListener("click", () => renderKeys(button.dataset.tab));
-});
-
-document.getElementById("clearButton").addEventListener("click", () => {
-  mathInput.value = "";
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>renderKeys(b.dataset.tab)));
+document.getElementById("clearButton").addEventListener("click",()=>{mathInput.value="";mathInput.focus();});
+document.getElementById("backspaceButton").addEventListener("click",()=>{
+  const a=mathInput.selectionStart,b=mathInput.selectionEnd;
+  if(a!==b) mathInput.setRangeText("",a,b,"end");
+  else if(a>0) mathInput.setRangeText("",a-1,b,"end");
   mathInput.focus();
 });
-
-document.getElementById("backspaceButton").addEventListener("click", () => {
-  const start = mathInput.selectionStart;
-  const end = mathInput.selectionEnd;
-
-  if (start !== end) {
-    mathInput.setRangeText("", start, end, "end");
-  } else if (start > 0) {
-    mathInput.setRangeText("", start - 1, end, "end");
-  }
-
-  mathInput.focus();
-});
-
-document.getElementById("degButton").addEventListener("click", () => {
-  angleMode = "deg";
+document.getElementById("degButton").addEventListener("click",()=>{
+  angleMode="deg";
   document.getElementById("degButton").classList.add("active");
   document.getElementById("radButton").classList.remove("active");
 });
-
-document.getElementById("radButton").addEventListener("click", () => {
-  angleMode = "rad";
+document.getElementById("radButton").addEventListener("click",()=>{
+  angleMode="rad";
   document.getElementById("radButton").classList.add("active");
   document.getElementById("degButton").classList.remove("active");
 });
-
 renderKeys("main");
 </script>
 </body>
