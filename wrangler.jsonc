@@ -4,5 +4,15 @@
   "name": "calculator",
   "main": "./src/index.js",
   "compatibility_date": "2026-10-24",
-  "workers_dev": true
+  "workers_dev": true,
+  "ratelimits": [
+    {
+      "name": "AI_RATE_LIMITER",
+      "namespace_id": "20261025",
+      "simple": {
+        "limit": 8,
+        "period": 60
+      }
+    }
+  ]
 }
