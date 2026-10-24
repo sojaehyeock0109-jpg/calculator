@@ -13,26 +13,6 @@ function json(data, status = 200, cors = {}) {
   });
 }
 
-// 혹시 AI가 LaTeX를 반환하더라도 읽기 쉬운 문자로 바꿉니다.
-function cleanAnswer(text) {
-  return text
-    .replace(/\$\$/g, "")
-    .replace(/\$/g, "")
-    .replace(/\\\(/g, "")
-    .replace(/\\\)/g, "")
-    .replace(/\\\[/g, "")
-    .replace(/\\\]/g, "")
-    .replace(/\\text\s*\{([^{}]*)\}/g, "$1")
-    .replace(/\\mathrm\s*\{([^{}]*)\}/g, "$1")
-    .replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, "($1) / ($2)")
-    .replace(/\\times|\\cdot/g, "×")
-    .replace(/\\Omega/g, "Ω")
-    .replace(/\\approx/g, "≈")
-    .replace(/\\,/g, " ")
-    .replace(/\\left|\\right/g, "")
-    .trim();
-}
-
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -50,15 +30,12 @@ export default {
       "Vary": "Origin"
     };
 
-    if (request.method === "OPTIONS") {
-      if (origin !== ALLOWED_ORIGIN) {
-        return new Response(null, { status: 403 });
-      }
-      return new Response(null, { status: 204, headers: cors });
-    }
-
     if (origin !== ALLOWED_ORIGIN) {
       return json({ error: "허용되지 않은 요청 출처입니다." }, 403);
+    }
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: cors });
     }
 
     if (url.pathname !== "/api/solve") {
@@ -85,6 +62,49 @@ export default {
         }, 400, cors);
       }
 
+      const systemPrompt = `
+너는 긴 설명을 하지 않는 한국어 공학 계산기다.
+목표는 사용자가 원하는 공학 계산의 공식, 값 대입, 최종 결과만 제공하는 것이다.
+
+규칙:
+1. 사용자의 질문에서 구할 물리량과 주어진 수치를 확인한다.
+2. 문제에 적합한 표준 수학·공학 공식을 선택한다.
+3. 필요한 값이 충분하면 공식에 실제 숫자와 단위를 대입해 계산한다.
+4. 답변은 반드시 다음 세 항목만 사용한다.
+
+**공식**
+적용할 공식
+
+**대입**
+숫자와 단위를 넣은 식
+
+**결과**
+계산 결과와 단위
+
+5. 인사말, 긴 개념 설명, 공식 유도, 요약, 추가 팁은 쓰지 않는다.
+6. 공식과 수식은 MathJax가 표시할 수 있는 LaTeX로 작성한다.
+   예: \\( I = \\frac{V}{R} \\)
+7. 계산 결과는 적절한 유효숫자로 표시하고 단위를 반드시 포함한다.
+8. 단위 변환이 필요하면 올바르게 변환한 뒤 대입한다.
+9. 필요한 수치가 빠졌거나 질문이 모호하면 결과를 추측하지 않는다.
+   대신 계산에 필요한 값만 한 문장으로 질문한다.
+10. 적용할 공식이 불확실하면 임의로 공식을 만들지 말고 사용자에게 확인한다.
+11. 내부 점검 목록이나 자기 평가 문구는 절대 출력하지 않는다.
+
+예시 질문:
+전압 12V, 저항 4옴일 때 전류를 구해 줘.
+
+예시 답변:
+**공식**
+\\( I = \\frac{V}{R} \\)
+
+**대입**
+\\( I = \\frac{12\\,\\mathrm{V}}{4\\,\\Omega} \\)
+
+**결과**
+\\( I = 3\\,\\mathrm{A} \\)
+      `.trim();
+
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
         {
@@ -95,29 +115,7 @@ export default {
           },
           body: JSON.stringify({
             systemInstruction: {
-              parts: [{
-                text: `
-너는 한국어 공학 계산기 AI다.
-
-사용자 질문에 직접 답하고, 공학 문제는 다음 순서로 설명한다.
-1. 주어진 값
-2. 적용 공식
-3. 값 대입과 계산 과정
-4. 최종 답과 단위
-
-중요한 출력 규칙:
-- 모든 수식은 일반 텍스트로 작성한다.
-- LaTeX 문법을 절대 사용하지 않는다.
-- 달러 기호 $, 백슬래시 \\, \\frac, \\text, \\mathrm 등을 출력하지 않는다.
-- 분수는 (분자) / (분모) 형태로 작성한다.
-- 제곱은 x^2 형태로 작성한다.
-- 예를 들어 "I = V / R", "I = 12 / 4 = 3 A"라고 작성한다.
-- 체크리스트, 내부 점검 문구, 자기 평가를 출력하지 않는다.
-- 질문에 대한 실제 풀이만 한국어로 작성한다.
-- 정보가 부족하면 필요한 내용을 질문한다.
-- 계산은 정확히 검토하고 불확실한 값은 단정하지 않는다.
-                `.trim()
-              }]
+              parts: [{ text: systemPrompt }]
             },
             contents: [{
               role: "user",
@@ -125,7 +123,7 @@ export default {
             }],
             generationConfig: {
               temperature: 0.1,
-              maxOutputTokens: 800,
+              maxOutputTokens: 450,
               thinkingConfig: {
                 includeThoughts: false,
                 thinkingLevel: "low"
@@ -139,31 +137,30 @@ export default {
         return json({
           error: response.status === 429
             ? "AI 이용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요."
-            : "AI 응답을 받지 못했습니다. API 설정을 확인해 주세요."
+            : "AI 응답에 실패했습니다. 서버와 API 설정을 확인해 주세요."
         }, response.status === 429 ? 429 : 502, cors);
       }
 
       const data = await response.json();
       const parts = data.candidates?.[0]?.content?.parts || [];
 
-      const rawAnswer = parts
-        .filter(part => part && !part.thought &&
-          typeof part.text === "string")
+      const answer = parts
+        .filter(part =>
+          part && !part.thought && typeof part.text === "string"
+        )
         .map(part => part.text)
         .join("\n")
         .trim();
 
-      if (!rawAnswer) {
+      if (!answer) {
         return json({
-          error: "AI가 답변을 반환하지 않았습니다. 다시 시도해 주세요."
+          error: "계산 결과를 받지 못했습니다. 다시 시도해 주세요."
         }, 502, cors);
       }
 
-      const answer = rawAnswer;
-
       if (/Readable text and formulas used\?|Safety validation note included\?|Final Output Generation:/i.test(answer)) {
         return json({
-          error: "AI 답변 형식이 올바르지 않습니다. 다시 시도해 주세요."
+          error: "올바르지 않은 답변이 반환됐습니다. 다시 시도해 주세요."
         }, 502, cors);
       }
 
@@ -171,7 +168,7 @@ export default {
 
     } catch (error) {
       return json({
-        error: "요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+        error: "요청 처리 중 오류가 발생했습니다. 다시 시도해 주세요."
       }, 500, cors);
     }
   }
