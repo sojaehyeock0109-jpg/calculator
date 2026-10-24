@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -6,75 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>공학 계산기</title>
   <style>
+    * { box-sizing: border-box; }
+
     body {
       font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #f5f7fb;
-      color: #202938;
+      max-width: 760px;
+      margin: 32px auto;
+      padding: 16px;
+      background: #f3f6fb;
+      color: #1f2937;
     }
+
     .app {
       background: white;
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 4px 18px #0000000d;
+      padding: 28px;
+      border-radius: 18px;
+      box-shadow: 0 6px 24px #0000000c;
     }
+
     h1 { margin-top: 0; }
+
     input, button {
-      box-sizing: border-box;
-      font-size: 16px;
-      padding: 12px;
-      border-radius: 8px;
+      font: inherit;
+      padding: 13px;
+      border-radius: 9px;
     }
+
     input {
       width: 100%;
-      border: 1px solid #cbd5e1;
       margin: 12px 0;
+      border: 1px solid #cbd5e1;
     }
+
     button {
       border: 0;
       background: #2563eb;
       color: white;
       cursor: pointer;
     }
+
+    button:hover { background: #1d4ed8; }
+
+    .examples {
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
     .result {
-      margin-top: 20px;
-      padding: 16px;
+      margin-top: 22px;
+      padding: 18px;
       background: #eff6ff;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow-wrap: anywhere;
     }
-    .hint { color: #64748b; font-size: 14px; line-height: 1.7; }
-    #formula { overflow-wrap: anywhere; }
+
+    #answer {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    #formula { color: #475569; }
   </style>
 </head>
 <body>
-<div class="app">
-  <h1>공학 계산기</h1>
-  <p>수식을 평소 말하듯 입력해 보세요.</p>
+  <main class="app">
+    <h1>공학 계산기</h1>
+    <p>수식을 평소 말하듯 입력해 보세요.</p>
 
-  <form id="calcForm">
-    <input id="expression"
-      placeholder="예: 루트 16 더하기 3의 제곱"
-      autocomplete="off">
-    <button type="submit">계산하기</button>
-  </form>
+    <form id="calcForm">
+      <input id="expression"
+        placeholder="예: 3의 제곱 더하기 2"
+        autocomplete="off">
+      <button type="submit">계산하기</button>
+    </form>
 
-  <p class="hint">
-    예시: 루트 16<br>
-    3의 제곱 더하기 2<br>
-    2분의 3 곱하기 10<br>
-    사인 30도 더하기 코사인 60도<br>
-    (2 + 3) 곱하기 4
-  </p>
+    <div class="examples">
+      <strong>입력 예시</strong><br>
+      루트 16<br>
+      3의 제곱 더하기 2<br>
+      2분의 3 곱하기 10<br>
+      사인 30도 더하기 코사인 60도<br>
+      (2 + 3) 곱하기 4<br>
+      2의 3제곱
+    </div>
 
-  <div class="result" aria-live="polite">
-    <strong id="status">계산 결과가 여기에 표시됩니다.</strong>
-    <p id="formula"></p>
-    <p id="answer"></p>
-  </div>
-</div>
+    <section class="result" aria-live="polite">
+      <strong id="status">계산 결과가 여기에 표시됩니다.</strong>
+      <p id="formula"></p>
+      <p id="answer"></p>
+    </section>
+  </main>
 
 <script>
 const form = document.getElementById("calcForm");
@@ -83,267 +104,256 @@ const statusText = document.getElementById("status");
 const formulaText = document.getElementById("formula");
 const answerText = document.getElementById("answer");
 
-function tokenize(text) {
+function prepareExpression(raw) {
+  if (raw.length > 300) {
+    throw new Error("수식은 300자 이하로 입력해 주세요.");
+  }
+
+  let s = raw.toLowerCase()
+    .replace(/×/g, "*")
+    .replace(/÷/g, "/")
+    .replace(/[−–]/g, "-");
+
+  // 한국어 분수: "2분의 3" = 3/2
+  s = s.replace(
+    /(\d+(?:\.\d*)?|\.\d+)\s*분의\s*(\d+(?:\.\d*)?|\.\d+)/g,
+    "($2/$1)"
+  );
+
+  // 긴 표현을 먼저 바꿉니다.
+  const replacements = [
+    ["자연로그", "ln"],
+    ["제곱근", "sqrt"],
+    ["코사인", "cos"],
+    ["탄젠트", "tan"],
+    ["사인", "sin"],
+    ["세제곱", "^3"],
+    ["제곱", "^2"],
+    ["루트", "sqrt"],
+    ["로그", "log"],
+    ["파이", "pi"],
+    ["더하기", "+"],
+    ["플러스", "+"],
+    ["빼기", "-"],
+    ["마이너스", "-"],
+    ["곱하기", "*"],
+    ["나누기", "/"],
+    ["의", ""],
+    ["도", ""]
+  ];
+
+  for (const [from, to] of replacements) {
+    s = s.split(from).join(to);
+  }
+
+  return s.trim();
+}
+
+function tokenize(s) {
   const tokens = [];
   let i = 0;
 
-  while (i < text.length) {
-    if (/\s/.test(text[i])) {
+  while (i < s.length) {
+    if (/\s/.test(s[i])) {
       i++;
       continue;
     }
 
-    const number = text.slice(i).match(/^(?:\d+\.?\d*|\.\d+)/);
+    const rest = s.slice(i);
+
+    const number = rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
     if (number) {
-      tokens.push({type: "number", value: Number(number[0])});
+      tokens.push({
+        type: "number",
+        value: Number(number[0])
+      });
       i += number[0].length;
       continue;
     }
 
-    const word = text.slice(i).match(/^[a-zA-Z가-힣]+/);
-    if (word) {
-      tokens.push({type: "word", value: word[0]});
-      i += word[0].length;
+    const identifier = rest.match(/^[a-z]+/);
+    if (identifier) {
+      tokens.push({
+        type: "name",
+        value: identifier[0]
+      });
+      i += identifier[0].length;
       continue;
     }
 
-    if ("+-*/^()".includes(text[i])) {
-      tokens.push({type: "op", value: text[i]});
+    if ("+-*/^()".includes(s[i])) {
+      tokens.push({
+        type: "symbol",
+        value: s[i]
+      });
       i++;
       continue;
     }
 
-    throw new Error("인식할 수 없는 문자: " + text[i]);
+    throw new Error("인식할 수 없는 문자: " + s[i]);
+  }
+
+  if (tokens.length === 0) {
+    throw new Error("수식을 입력해 주세요.");
+  }
+
+  if (tokens.length > 150) {
+    throw new Error("수식이 너무 복잡합니다.");
   }
 
   return tokens;
 }
 
-function normalize(tokens) {
-  const output = [];
-  const words = {
-    "더하기": "+", "플러스": "+",
-    "빼기": "-", "마이너스": "-",
-    "곱하기": "*", "곱": "*", "곱하기를": "*",
-    "나누기": "/", "나눗셈": "/",
-    "제곱": "^2", "세제곱": "^3",
-    "루트": "sqrt", "제곱근": "sqrt",
-    "사인": "sin", "싸인": "sin",
-    "코사인": "cos", "탄젠트": "tan",
-    "로그": "log", "자연로그": "ln",
-    "파이": "pi"
-  };
+function calculateExpression(tokens) {
+  let pos = 0;
 
-  for (let i = 0; i < tokens.length; i++) {
-    let t = tokens[i];
-
-    if (t.type === "word") {
-      let w = t.value.toLowerCase();
-
-      if (w === "도") continue;
-
-      if (w === "분의") {
-        // "2분의 3"은 앞의 2와 뒤의 3을
-        // 하나의 분수로 처리하기 위해 별도 표시
-        output.push({type: "fraction"});
-        continue;
-      }
-
-      if (w === "의") continue;
-
-      if (w === "sin" || w === "cos" || w === "tan" ||
-          w === "sqrt" || w === "log" || w === "ln" ||
-          w === "pi" || w === "e") {
-        output.push({type: "word", value: w});
-        continue;
-      }
-
-      if (words[w] === "^2" || words[w] === "^3") {
-        output.push({type: "op", value: words[w]});
-      } else if (words[w]) {
-        output.push({type: "word", value: words[w]});
-      } else {
-        throw new Error("아직 지원하지 않는 표현: " + t.value);
-      }
-    } else {
-      output.push(t);
-    }
+  function peek() {
+    return tokens[pos];
   }
 
-  // 분수 표현을 자동으로 임의 해석하지 않도록
-  // 이번 버전에서는 '2분의 3'을 명시적으로 처리
-  const result = [];
-  for (let i = 0; i < output.length; i++) {
-    if (output[i].type === "number" &&
-        output[i + 1]?.type === "fraction" &&
-        output[i + 2]?.type === "number") {
-      result.push({
-        type: "fractionValue",
-        numerator: output[i + 2].value,
-        denominator: output[i].value
-      });
-      i += 2;
-    } else {
-      result.push(output[i]);
+  function take(value) {
+    if (peek() && peek().value === value) {
+      return tokens[pos++];
     }
+    return null;
+  }
+
+  function expression() {
+    let value = term();
+
+    while (peek() &&
+      (peek().value === "+" || peek().value === "-")) {
+      const op = tokens[pos++].value;
+      const right = term();
+      value = op === "+" ? value + right : value - right;
+    }
+
+    return value;
+  }
+
+  function term() {
+    let value = unary();
+
+    while (peek() &&
+      (peek().value === "*" || peek().value === "/")) {
+      const op = tokens[pos++].value;
+      const right = unary();
+
+      if (op === "/" && right === 0) {
+        throw new Error("0으로 나눌 수 없습니다.");
+      }
+
+      value = op === "*" ? value * right : value / right;
+    }
+
+    return value;
+  }
+
+  function unary() {
+    if (take("+")) return unary();
+    if (take("-")) return -unary();
+    return power();
+  }
+
+  function power() {
+    const base = primary();
+
+    if (take("^")) {
+      const exponent = unary();
+      return Math.pow(base, exponent);
+    }
+
+    return base;
+  }
+
+  function primary() {
+    const t = peek();
+
+    if (!t) {
+      throw new Error("수식이 완성되지 않았습니다.");
+    }
+
+    if (t.type === "number") {
+      pos++;
+      return t.value;
+    }
+
+    if (take("(")) {
+      const value = expression();
+
+      if (!take(")")) {
+        throw new Error("닫는 괄호 )가 필요합니다.");
+      }
+
+      return value;
+    }
+
+    if (t.type === "name") {
+      pos++;
+      const name = t.value;
+
+      if (name === "pi") return Math.PI;
+      if (name === "e") return Math.E;
+
+      const functions = ["sqrt", "sin", "cos", "tan", "log", "ln"];
+
+      if (!functions.includes(name)) {
+        throw new Error("지원하지 않는 표현: " + name);
+      }
+
+      // 함수 뒤에 괄호가 없어도 입력할 수 있습니다.
+      const a = unary();
+      let value;
+
+      if (name === "sqrt") {
+        if (a < 0) throw new Error("실수 범위에서 음수의 제곱근은 계산할 수 없습니다.");
+        value = Math.sqrt(a);
+      } else if (name === "sin") {
+        value = Math.sin(a * Math.PI / 180);
+      } else if (name === "cos") {
+        value = Math.cos(a * Math.PI / 180);
+      } else if (name === "tan") {
+        value = Math.tan(a * Math.PI / 180);
+      } else if (name === "log") {
+        if (a <= 0) throw new Error("로그의 입력값은 0보다 커야 합니다.");
+        value = Math.log10(a);
+      } else {
+        if (a <= 0) throw new Error("자연로그의 입력값은 0보다 커야 합니다.");
+        value = Math.log(a);
+      }
+
+      return value;
+    }
+
+    throw new Error("수식의 순서를 확인해 주세요.");
+  }
+
+  const result = expression();
+
+  if (pos !== tokens.length) {
+    throw new Error("연산자나 괄호의 위치를 확인해 주세요.");
+  }
+
+  if (!Number.isFinite(result)) {
+    throw new Error("계산 결과가 유효한 실수가 아닙니다.");
   }
 
   return result;
-}
-
-function toRpn(tokens) {
-  const out = [];
-  const ops = [];
-  const precedence = {
-    "+": 1, "-": 1, "*": 2, "/": 2,
-    "u-": 3, "^": 4, "^2": 4, "^3": 4
-  };
-
-  let prev = "start";
-
-  for (let t of tokens) {
-    if (t.type === "number" || t.type === "fractionValue") {
-      out.push(t);
-      prev = "value";
-    } else if (t.type === "word") {
-      if (["pi", "e"].includes(t.value)) {
-        out.push({type: "constant", value: t.value});
-        prev = "value";
-      } else {
-        ops.push({type: "function", value: t.value});
-        prev = "function";
-      }
-    } else if (t.type === "op" && t.value === "(") {
-      ops.push(t);
-      prev = "(";
-    } else if (t.type === "op" && t.value === ")") {
-      while (ops.length && ops[ops.length - 1].value !== "(") {
-        out.push(ops.pop());
-      }
-      if (!ops.length) throw new Error("괄호를 확인해 주세요.");
-      ops.pop();
-      if (ops.length && ops[ops.length - 1].type === "function") {
-        out.push(ops.pop());
-      }
-      prev = "value";
-    } else if (t.type === "op") {
-      let op = t.value;
-
-      if (op === "^2" || op === "^3") {
-        out.push({type: "op", value: op});
-        prev = "value";
-        continue;
-      }
-
-      if (op === "-" && ["start", "(", "operator", "function"].includes(prev)) {
-        op = "u-";
-      }
-
-      while (ops.length) {
-        const top = ops[ops.length - 1];
-        if (top.value === "(" || top.type === "function") break;
-
-        const p1 = precedence[op] || 0;
-        const p2 = precedence[top.value] || 0;
-
-        if (p2 > p1 || (p2 === p1 && op !== "^")) {
-          out.push(ops.pop());
-        } else break;
-      }
-
-      ops.push({type: "op", value: op});
-      prev = "operator";
-    }
-  }
-
-  while (ops.length) {
-    const op = ops.pop();
-    if (op.value === "(") throw new Error("괄호가 닫히지 않았습니다.");
-    out.push(op);
-  }
-
-  return out;
-}
-
-function evaluateRpn(rpn) {
-  const stack = [];
-
-  for (const t of rpn) {
-    if (t.type === "number") {
-      stack.push(t.value);
-    } else if (t.type === "fractionValue") {
-      if (t.denominator === 0) throw new Error("분모는 0일 수 없습니다.");
-      stack.push(t.numerator / t.denominator);
-    } else if (t.type === "constant") {
-      stack.push(t.value === "pi" ? Math.PI : Math.E);
-    } else if (t.type === "function") {
-      if (!stack.length) throw new Error("함수 뒤에 숫자를 입력해 주세요.");
-      const a = stack.pop();
-      let v;
-
-      if (t.value === "sqrt") v = Math.sqrt(a);
-      else if (t.value === "sin") v = Math.sin(a * Math.PI / 180);
-      else if (t.value === "cos") v = Math.cos(a * Math.PI / 180);
-      else if (t.value === "tan") v = Math.tan(a * Math.PI / 180);
-      else if (t.value === "log") v = Math.log10(a);
-      else if (t.value === "ln") v = Math.log(a);
-      else throw new Error("지원하지 않는 함수입니다.");
-
-      stack.push(v);
-    } else if (t.type === "op") {
-      if (t.value === "u-") {
-        if (!stack.length) throw new Error("수식을 확인해 주세요.");
-        stack.push(-stack.pop());
-        continue;
-      }
-
-      if (t.value === "^2" || t.value === "^3") {
-        if (!stack.length) throw new Error("제곱할 값이 없습니다.");
-        const a = stack.pop();
-        stack.push(Math.pow(a, t.value === "^2" ? 2 : 3));
-        continue;
-      }
-
-      if (stack.length < 2) throw new Error("수식의 순서를 확인해 주세요.");
-
-      const b = stack.pop();
-      const a = stack.pop();
-
-      if (t.value === "+") stack.push(a + b);
-      else if (t.value === "-") stack.push(a - b);
-      else if (t.value === "*") stack.push(a * b);
-      else if (t.value === "/") {
-        if (b === 0) throw new Error("0으로 나눌 수 없습니다.");
-        stack.push(a / b);
-      } else if (t.value === "^") stack.push(Math.pow(a, b));
-    }
-  }
-
-  if (stack.length !== 1 || !Number.isFinite(stack[0])) {
-    throw new Error("수식을 확인해 주세요.");
-  }
-
-  return stack[0];
-}
-
-function calculateExpression(text) {
-  const tokens = normalize(tokenize(text));
-  const rpn = toRpn(tokens);
-  return evaluateRpn(rpn);
 }
 
 form.addEventListener("submit", function(event) {
   event.preventDefault();
 
   try {
-    const text = input.value.trim();
-    if (!text) throw new Error("수식을 입력해 주세요.");
+    const original = input.value.trim();
+    const normalized = prepareExpression(original);
+    const tokens = tokenize(normalized);
+    const value = calculateExpression(tokens);
 
-    const value = calculateExpression(text);
     statusText.textContent = "계산 완료";
-    formulaText.textContent = "입력한 수식: " + text;
-    answerText.textContent = "결과: " +
-      Number(value.toPrecision(12)).toString();
+    formulaText.textContent = "변환한 수식: " + normalized;
+    answerText.textContent =
+      "결과: " + Number(value.toPrecision(12)).toString();
   } catch (error) {
     statusText.textContent = "계산할 수 없습니다.";
     formulaText.textContent = error.message;
@@ -351,10 +361,5 @@ form.addEventListener("submit", function(event) {
   }
 });
 </script>
-</body>
-</html>
-
-    }
-  </script>
 </body>
 </html>
