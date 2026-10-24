@@ -11,15 +11,10 @@ window.MathJax = {
   tex: {
     inlineMath: [["$", "$"], ["\\(", "\\)"]],
     displayMath: [["$$", "$$"], ["\\[", "\\]"]]
-  },
-  options: {
-    skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
   }
 };
 </script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-
-<!-- 기호 수학 및 방정식 풀이 -->
 <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js"></script>
@@ -28,30 +23,21 @@ window.MathJax = {
 <style>
 * { box-sizing: border-box; }
 
-:root {
-  --blue: #2563eb;
-  --purple: #6d28d9;
-  --bg: #f2f5fb;
-  --muted: #64748b;
-  --text: #172033;
-}
-
 body {
   margin: 0;
   padding: 24px;
-  background: var(--bg);
-  color: var(--text);
+  background: #f2f5fb;
+  color: #172033;
   font-family: Arial, "Malgun Gothic", sans-serif;
 }
 
 .layout {
-  width: 100%;
   max-width: 1500px;
-  margin: 0 auto;
+  margin: auto;
   display: grid;
   grid-template-columns: minmax(320px, .92fr) minmax(420px, 1.08fr);
-  align-items: start;
   gap: 22px;
+  align-items: start;
 }
 
 .panel {
@@ -66,7 +52,7 @@ h1 { font-size: 26px; margin: 0 0 12px; }
 p { line-height: 1.65; }
 
 .subtext, .examples {
-  color: var(--muted);
+  color: #64748b;
   font-size: 14px;
   line-height: 1.9;
 }
@@ -78,8 +64,8 @@ input, textarea {
   padding: 13px;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
-  color: var(--text);
   background: white;
+  color: #172033;
 }
 
 button {
@@ -90,20 +76,19 @@ button {
 }
 
 button:disabled { opacity: .55; cursor: wait; }
-
-.primary { color: white; background: var(--blue); }
-.ai-button { color: white; background: var(--purple); }
+.primary { color: white; background: #2563eb; }
+.ai-button { color: white; background: #6d28d9; }
 .secondary { color: #334155; background: #e9eef6; }
 
 .editor-box {
-  min-height: 200px;
+  min-height: 180px;
   padding: 12px;
   border: 1px solid #dbe2ec;
   border-radius: 12px;
 }
 
 #formulaEditor {
-  min-height: 175px;
+  min-height: 155px;
   resize: vertical;
   border: 0;
   outline: none;
@@ -130,22 +115,14 @@ button:disabled { opacity: .55; cursor: wait; }
 
 .tabs, .angle-modes { display: flex; gap: 5px; }
 
-.tab {
+.tab, .angle {
   padding: 9px 12px;
-  background: transparent;
-  color: var(--muted);
-}
-
-.tab.active { color: var(--blue); background: #eff6ff; }
-
-.angle {
-  padding: 8px 10px;
   background: #f1f5f9;
-  color: #475569;
-  font-size: 12px;
+  color: #64748b;
 }
 
-.angle.active { color: white; background: #475569; }
+.tab.active { background: #eff6ff; color: #2563eb; }
+.angle.active { background: #475569; color: white; }
 
 .key-grid {
   display: grid;
@@ -155,12 +132,11 @@ button:disabled { opacity: .55; cursor: wait; }
 
 .key {
   min-width: 0;
-  min-height: 46px;
+  min-height: 44px;
   padding: 8px 3px;
   background: #edf1f7;
   color: #1e293b;
   border: 1px solid #dce3ed;
-  font-size: 17px;
 }
 
 .key.operator { color: #1d4ed8; background: #e8f0ff; }
@@ -174,16 +150,13 @@ button:disabled { opacity: .55; cursor: wait; }
 }
 
 .key-hint, .right-footnote {
-  color: var(--muted);
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #64748b;
   font-size: 13px;
   line-height: 1.7;
-  margin-top: 14px;
-}
-
-.key-hint {
-  padding: 12px;
-  background: #f8fafc;
-  border-radius: 9px;
 }
 
 .right-input { margin-top: 16px; }
@@ -206,8 +179,20 @@ button:disabled { opacity: .55; cursor: wait; }
 }
 
 #formula { color: #526581; line-height: 1.7; }
-#answer { font-size: 16px; line-height: 1.9; overflow-wrap: anywhere; }
-#answer mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+
+#answer {
+  font-size: 16px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+#answer mjx-container {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .status { font-weight: 700; }
 
 @media (max-width: 1000px) {
@@ -217,10 +202,9 @@ button:disabled { opacity: .55; cursor: wait; }
 }
 
 @media (max-width: 450px) {
-  .key-grid { gap: 5px; }
-  .key { min-height: 42px; font-size: 15px; }
   .panel { padding: 16px; }
-  button { max-width: 100%; }
+  .key-grid { gap: 5px; }
+  .key { min-height: 40px; font-size: 14px; }
 }
 </style>
 </head>
@@ -230,19 +214,17 @@ button:disabled { opacity: .55; cursor: wait; }
 
 <section class="panel">
   <h1>수식 입력기</h1>
-  <p class="subtext">수식이나 방정식을 입력하세요. AI 호출 없이 계산합니다.</p>
+  <p class="subtext">수식과 방정식을 입력하고 계산하세요.</p>
 
   <div class="editor-box">
     <textarea id="formulaEditor"
-      aria-label="수식 입력"
       placeholder="예: x^2 + 4 = 16"
+      aria-label="수식 입력"
       spellcheck="false"></textarea>
   </div>
 
   <div class="editor-actions">
-    <button class="primary" id="localFromEditor" type="button">
-      수식 계산하기
-    </button>
+    <button class="primary" id="localFromEditor" type="button">수식 계산하기</button>
   </div>
 
   <div class="keyboard-header">
@@ -265,9 +247,10 @@ button:disabled { opacity: .55; cursor: wait; }
   </div>
 
   <div class="key-hint">
-    <strong>방정식 풀이</strong><br>
-    예: <code>x^2 + 4 = 16</code>, <code>2*x + 3 = 7</code><br>
-    미지수 하나가 포함된 지원 가능한 방정식은 해를 구합니다.
+    <strong>방정식 예시</strong><br>
+    <code>x^2 + 4 = 16</code><br>
+    <code>2*x + 3 = 7</code><br>
+    지원 가능한 방정식은 정확한 해와 소수 근삿값을 표시합니다.
   </div>
 </section>
 
@@ -279,6 +262,7 @@ button:disabled { opacity: .55; cursor: wait; }
     <input id="expression" class="right-input"
       placeholder="예: x^2 + 4 = 16"
       autocomplete="off">
+
     <div class="main-actions">
       <button class="primary" type="submit">수식 계산하기</button>
       <button class="ai-button" id="aiButton" type="button">AI로 공학 문제 풀이</button>
@@ -289,7 +273,7 @@ button:disabled { opacity: .55; cursor: wait; }
     <strong>수식 계산 예시</strong><br>
     <button class="example-item" data-example="루트 16" type="button">루트 16</button>
     <button class="example-item" data-example="3의 제곱 더하기 2" type="button">3의 제곱 더하기 2</button>
-    <button class="example-item" data-example="2분의 3 곱하기 10" type="button">2분의 3 곱하기 10</button>
+    <button class="example-item" data-example="2의3제곱" type="button">2의3제곱</button>
     <button class="example-item" data-example="x^2 + 4 = 16" type="button">x² + 4 = 16</button>
     <button class="example-item" data-example="2*x + 3 = 7" type="button">2x + 3 = 7</button>
     <br><strong>AI 질문 예시</strong><br>
@@ -297,30 +281,25 @@ button:disabled { opacity: .55; cursor: wait; }
   </div>
 
   <section class="result" aria-live="polite">
-    <strong class="status" id="status">계산 결과 또는 AI 풀이가 여기에 표시됩니다.</strong>
+    <strong class="status" id="status">계산 결과가 여기에 표시됩니다.</strong>
     <p id="formula"></p>
     <div id="answer"></div>
   </section>
 
-  <p class="right-footnote">
-    방정식 풀이는 브라우저에서 수행합니다. AI 풀이는 API 사용량에 따라 제한될 수 있습니다.
-  </p>
+  <p class="right-footnote">방정식 풀이는 브라우저에서 실행되며 AI API를 사용하지 않습니다.</p>
 </section>
 </div>
 
 <script>
-const AI_API_URL =
-  "https://calculator.sojaehyeock0109-jpg.workers.dev/api/solve";
+const AI_API_URL = "https://calculator.sojaehyeock0109.workers.dev/api/solve";
 
 const editor = document.getElementById("formulaEditor");
-const calcForm = document.getElementById("calcForm");
 const input = document.getElementById("expression");
 const statusText = document.getElementById("status");
 const formulaText = document.getElementById("formula");
 const answerText = document.getElementById("answer");
 const aiButton = document.getElementById("aiButton");
 const keyGrid = document.getElementById("keyGrid");
-
 let angleMode = "deg";
 
 function prepareExpression(raw) {
@@ -363,28 +342,156 @@ function prepareExpression(raw) {
   return s.trim();
 }
 
-// 방정식을 Nerdamer로 풉니다. AI API는 사용하지 않습니다.
+function fmtNumber(n) {
+  if (Math.abs(n) < 1e-12) return "0";
+  return Number(n.toPrecision(7)).toString();
+}
+
+function gcd(a, b) {
+  a = Math.abs(Math.round(a));
+  b = Math.abs(Math.round(b));
+  while (b) [a, b] = [b, a % b];
+  return a || 1;
+}
+
+function rationalTex(n, d) {
+  if (d < 0) { n = -n; d = -d; }
+  const g = gcd(n, d);
+  n = Math.round(n / g);
+  d = Math.round(d / g);
+
+  if (d === 1) return String(n);
+  return `\\frac{${n}}{${d}}`;
+}
+
+// sqrt(n)을 outside * sqrt(inside) 형태로 간단히 만듭니다.
+function simplifyIntegerSqrt(n) {
+  let inside = Math.round(n);
+  let outside = 1;
+
+  for (let i = 2; i * i <= inside && i <= 10000; i++) {
+    while (inside % (i * i) === 0) {
+      outside *= i;
+      inside /= i * i;
+    }
+  }
+
+  return {outside, inside};
+}
+
+function isIntegerNear(n) {
+  return Math.abs(n - Math.round(n)) < 1e-8;
+}
+
+function numericExpression(expr) {
+  const value = window.nerdamer(String(expr)).evaluate().text();
+  const n = Number(value);
+
+  if (!Number.isFinite(n)) {
+    throw new Error("방정식의 계수를 숫자로 계산할 수 없습니다.");
+  }
+  return n;
+}
+
+function exactQuadraticAnswer(a, b, c, variable) {
+  // 부호를 정규화합니다.
+  if (a < 0) {
+    a = -a; b = -b; c = -c;
+  }
+
+  const D = b * b - 4 * a * c;
+  const rootD = Math.sqrt(Math.max(0, D));
+  const x1 = (-b + rootD) / (2 * a);
+  const x2 = (-b - rootD) / (2 * a);
+
+  let exact;
+
+  if (D < -1e-9) {
+    // 복소근
+    const real = -b / (2 * a);
+    const imag = Math.sqrt(-D) / (2 * a);
+    exact =
+      `${variable} = \\frac{-(${fmtNumber(b)}) \\pm i\\sqrt{${fmtNumber(-D)}}}{${fmtNumber(2*a)}}`;
+
+    return {
+      exact,
+      approximate:
+        `${variable}_1 \\approx ${fmtNumber(real)} + ${fmtNumber(imag)}i,\\quad ` +
+        `${variable}_2 \\approx ${fmtNumber(real)} - ${fmtNumber(imag)}i`
+    };
+  }
+
+  // 계수와 판별식이 정수일 때 근호를 간단하게 정리합니다.
+  if ([a, b, c, D].every(isIntegerNear)) {
+    a = Math.round(a);
+    b = Math.round(b);
+    c = Math.round(c);
+    const intD = Math.max(0, Math.round(D));
+    const sqrtInfo = simplifyIntegerSqrt(intD);
+
+    if (sqrtInfo.inside === 1) {
+      const r1 = rationalTex(-b + sqrtInfo.outside, 2 * a);
+      const r2 = rationalTex(-b - sqrtInfo.outside, 2 * a);
+      exact = `${variable}_1 = ${r1},\\quad ${variable}_2 = ${r2}`;
+    } else {
+      const denominator = 2 * a;
+      const common = gcd(gcd(b, sqrtInfo.outside), denominator);
+      const base = -Math.round(b / common);
+      const outside = Math.round(sqrtInfo.outside / common);
+      const den = Math.round(denominator / common);
+      const radical = `${outside === 1 ? "" : outside}\\sqrt{${sqrtInfo.inside}}`;
+
+      let expression;
+
+      if (base === 0) {
+        expression = outside === 1
+          ? `\\sqrt{${sqrtInfo.inside}}`
+          : `${outside}\\sqrt{${sqrtInfo.inside}}`;
+
+        if (den !== 1) {
+          expression = `\\frac{${outside === 1 ? `\\sqrt{${sqrtInfo.inside}}` : `${outside}\\sqrt{${sqrtInfo.inside}}`}}{${den}}`;
+        }
+
+        exact = `${variable} = \\pm ${expression}`;
+      } else {
+        const numerator = `${base < 0 ? `-${Math.abs(base)}` : base} \\pm ${radical}`;
+
+        expression = den === 1
+          ? numerator
+          : `\\frac{${numerator}}{${den}}`;
+
+        exact = `${variable} = ${expression}`;
+      }
+    }
+  } else {
+    // 소수 계수의 경우에도 정확한 일반 근의 공식을 보여 줍니다.
+    exact =
+      `${variable} = \\frac{-(${fmtNumber(b)}) \\pm \\sqrt{${fmtNumber(D)}}}{${fmtNumber(2*a)}}`;
+  }
+
+  return {
+    exact,
+    approximate:
+      `${variable}_1 \\approx ${fmtNumber(x1)},\\quad ` +
+      `${variable}_2 \\approx ${fmtNumber(x2)}`
+  };
+}
+
 function solveEquation(raw) {
   const normalized = prepareExpression(raw);
 
   if (!normalized.includes("=")) return null;
 
   if ((normalized.match(/=/g) || []).length !== 1) {
-    throw new Error("현재는 등호가 하나인 방정식만 지원합니다.");
+    throw new Error("등호가 하나인 방정식만 지원합니다.");
   }
 
   const [left, right] = normalized.split("=").map(s => s.trim());
 
-  if (!left || !right) {
-    throw new Error("등호의 양쪽에 수식을 입력해 주세요.");
-  }
+  if (!left || !right) throw new Error("등호 양쪽의 식을 확인해 주세요.");
 
   if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(left + right)) {
     throw new Error("방정식에 지원하지 않는 문자가 있습니다.");
-  }
-
-  if (!window.nerdamer || typeof window.nerdamer.solve !== "function") {
-    throw new Error("방정식 풀이 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.");
   }
 
   const ignored = new Set([
@@ -397,76 +504,125 @@ function solveEquation(raw) {
       .filter(s => !ignored.has(s))
   )];
 
-  if (variables.length === 0) {
-    throw new Error("방정식에서 미지수를 찾지 못했습니다. 예: x^2 + 4 = 16");
-  }
-
-  if (variables.length > 1) {
-    throw new Error("현재는 미지수 하나를 구하는 방정식만 지원합니다.");
+  if (variables.length !== 1) {
+    throw new Error(
+      variables.length === 0
+        ? "방정식에서 미지수를 찾지 못했습니다."
+        : "현재는 미지수 하나인 방정식을 지원합니다."
+    );
   }
 
   const variable = variables[0];
   const residual = `(${left})-(${right})`;
 
+  // 먼저 다항식 계수를 추출해 일차·이차방정식을 정확하게 풉니다.
+  try {
+    const expanded = window.nerdamer(residual).expand().toString();
+    const vector = window.nerdamer.coeffs(expanded, variable);
+    const coefficients = vector.elements.map(item =>
+      numericExpression(item.toString())
+    );
+
+    while (
+      coefficients.length > 1 &&
+      Math.abs(coefficients[coefficients.length - 1]) < 1e-10
+    ) {
+      coefficients.pop();
+    }
+
+    const degree = coefficients.length - 1;
+
+    if (degree === 1) {
+      const c = coefficients[0];
+      const b = coefficients[1];
+
+      if (Math.abs(b) < 1e-12) {
+        throw new Error("일차방정식의 계수가 0입니다.");
+      }
+
+      const root = -c / b;
+      let exact;
+
+      if ([b, c].every(isIntegerNear)) {
+        exact = rationalTex(-Math.round(c), Math.round(b));
+      } else {
+        exact = fmtNumber(root);
+      }
+
+      return {
+        normalized,
+        display:
+          `정확한 해:\n\\[${variable} = ${exact}\\]\n\n` +
+          `소수 근삿값:\n\\[${variable} \\approx ${fmtNumber(root)}\\]`
+      };
+    }
+
+    if (degree === 2) {
+      const c = coefficients[0];
+      const b = coefficients[1];
+      const a = coefficients[2];
+      const solved = exactQuadraticAnswer(a, b, c, variable);
+
+      return {
+        normalized,
+        display:
+          `정확한 해:\n\\[${solved.exact}\\]\n\n` +
+          `소수 근삿값:\n\\[${solved.approximate}\\]`
+      };
+    }
+  } catch (error) {
+    if (error.message && (
+      error.message.includes("계수가 0") ||
+      error.message.includes("미지수")
+    )) {
+      throw error;
+    }
+    // 기호 계수 추출에 실패하면 일반 솔버로 넘어갑니다.
+  }
+
+  // 고차 방정식과 다른 지원되는 유형은 Nerdamer 솔버를 사용합니다.
   let solution;
 
   try {
     solution = window.nerdamer.solve(residual, variable);
   } catch {
-    throw new Error("이 방정식은 현재 풀이 엔진에서 지원하지 않거나 해를 구하지 못했습니다.");
+    throw new Error("이 방정식의 해를 구하지 못했습니다.");
   }
 
-  let rawSolutions = String(solution).trim()
+  const roots = String(solution).trim()
     .replace(/^\{|\}$/g, "")
-    .replace(/^\[|\]$/g, "")
-    .trim();
-
-  if (
-    !rawSolutions ||
-    rawSolutions === "[]" ||
-    rawSolutions === "{}" ||
-    /unsolved|undefined|NaN/i.test(rawSolutions)
-  ) {
-    throw new Error("해를 구하지 못했습니다. 방정식 형식을 확인해 주세요.");
-  }
-
-  const roots = rawSolutions
     .split(",")
     .map(s => s.trim())
     .filter(Boolean);
 
-  const latexRoots = roots.map(root => {
-  // 큰 정수 분수는 읽기 쉬운 소수로 표시
-  const fraction = root.match(/^([+-]?\d+)\/(\d+)$/);
+  if (!roots.length || /unsolved|undefined|NaN/i.test(String(solution))) {
+    throw new Error("해를 구하지 못했습니다.");
+  }
 
-  if (
-    fraction &&
-    (
-      fraction[1].replace("-", "").length > 6 ||
-      fraction[2].length > 6
-    )
-  ) {
-    const value = Number(fraction[1]) / Number(fraction[2]);
-
-    if (Number.isFinite(value)) {
-      return `\\(${variable} \\approx ${value.toFixed(4)}\\)`;
+  const exactRoots = roots.map(root => {
+    try {
+      return `${variable} = ${window.nerdamer(root).toTeX()}`;
+    } catch {
+      return `${variable} = ${root}`;
     }
-  }
+  });
 
-  // 간단한 정수와 분수, 기호식은 기존 표현을 유지
-  try {
-    const tex = window.nerdamer(root).toTeX();
-    return `\\(${variable} = ${tex}\\)`;
-  } catch {
-    return `\\(${variable} = ${root}\\)`;
-  }
-});
+  const approximateRoots = roots.map(root => {
+    try {
+      const n = numericExpression(root);
+      return Number.isFinite(n)
+        ? `${variable} \\approx ${fmtNumber(n)}`
+        : `${variable} = ${root}`;
+    } catch {
+      return `${variable} = ${root}`;
+    }
+  });
 
   return {
     normalized,
-    variable,
-    roots,
-    display: latexRoots.join(" , ")
+    display:
+      `정확한 해:\n\\[${exactRoots.join(",\\quad ")}\\]\n\n` +
+      `근삿값:\n\\[${approximateRoots.join(",\\quad ")}\\]`
   };
 }
 
@@ -478,24 +634,24 @@ function tokenize(s) {
     if (/\s/.test(s[i])) { i++; continue; }
 
     const rest = s.slice(i);
-    const number = rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
+    const num = rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
 
-    if (number) {
-      tokens.push({type: "number", value: Number(number[0])});
-      i += number[0].length;
+    if (num) {
+      tokens.push({type:"number", value:Number(num[0])});
+      i += num[0].length;
       continue;
     }
 
     const name = rest.match(/^[a-z]+/);
 
     if (name) {
-      tokens.push({type: "name", value: name[0]});
+      tokens.push({type:"name", value:name[0]});
       i += name[0].length;
       continue;
     }
 
     if ("+-*/^()".includes(s[i])) {
-      tokens.push({type: "symbol", value: s[i++]});
+      tokens.push({type:"symbol", value:s[i++]});
       continue;
     }
 
@@ -510,11 +666,8 @@ function calculateExpression(tokens) {
   let pos = 0;
   const peek = () => tokens[pos];
 
-  function take(value) {
-    if (peek() && peek().value === value) {
-      pos++;
-      return true;
-    }
+  function take(v) {
+    if (peek() && peek().value === v) { pos++; return true; }
     return false;
   }
 
@@ -524,7 +677,7 @@ function calculateExpression(tokens) {
     while (peek() && ["+", "-"].includes(peek().value)) {
       const op = tokens[pos++].value;
       const r = term();
-      v = op === "+" ? v + r : v - r;
+      v = op === "+" ? v+r : v-r;
     }
     return v;
   }
@@ -535,8 +688,9 @@ function calculateExpression(tokens) {
     while (peek() && ["*", "/"].includes(peek().value)) {
       const op = tokens[pos++].value;
       const r = unary();
+
       if (op === "/" && r === 0) throw new Error("0으로 나눌 수 없습니다.");
-      v = op === "*" ? v * r : v / r;
+      v = op === "*" ? v*r : v/r;
     }
     return v;
   }
@@ -548,19 +702,16 @@ function calculateExpression(tokens) {
   }
 
   function power() {
-    const base = primary();
-    if (take("^")) return Math.pow(base, unary());
-    return base;
+    const b = primary();
+    return take("^") ? Math.pow(b, unary()) : b;
   }
 
   function primary() {
     const t = peek();
+
     if (!t) throw new Error("수식이 완성되지 않았습니다.");
 
-    if (t.type === "number") {
-      pos++;
-      return t.value;
-    }
+    if (t.type === "number") { pos++; return t.value; }
 
     if (take("(")) {
       const v = expression();
@@ -571,11 +722,10 @@ function calculateExpression(tokens) {
     if (t.type === "name") {
       pos++;
       const name = t.value;
-
       if (name === "pi") return Math.PI;
       if (name === "e") return Math.E;
 
-      if (!["sqrt", "sin", "cos", "tan", "log", "ln"].includes(name)) {
+      if (!["sqrt","sin","cos","tan","log","ln"].includes(name)) {
         throw new Error("지원하지 않는 함수: " + name);
       }
 
@@ -593,7 +743,7 @@ function calculateExpression(tokens) {
         return Math.sqrt(a);
       }
 
-      const angle = angleMode === "deg" ? a * Math.PI / 180 : a;
+      const angle = angleMode === "deg" ? a*Math.PI/180 : a;
 
       if (name === "sin") return Math.sin(angle);
       if (name === "cos") return Math.cos(angle);
@@ -602,7 +752,6 @@ function calculateExpression(tokens) {
         if (a <= 0) throw new Error("로그의 입력값은 0보다 커야 합니다.");
         return Math.log10(a);
       }
-
       if (a <= 0) throw new Error("자연로그의 입력값은 0보다 커야 합니다.");
       return Math.log(a);
     }
@@ -612,105 +761,82 @@ function calculateExpression(tokens) {
 
   const result = expression();
 
-  if (pos !== tokens.length) {
-    throw new Error("연산자나 괄호의 위치를 확인해 주세요.");
-  }
-
-  if (!Number.isFinite(result)) {
-    throw new Error("유효한 실수 결과가 아닙니다.");
-  }
+  if (pos !== tokens.length) throw new Error("수식을 확인해 주세요.");
+  if (!Number.isFinite(result)) throw new Error("유효한 실수 결과가 아닙니다.");
 
   return result;
 }
 
-function setResultStatus(status, formula = "", answer = "") {
+async function renderMath() {
+  if (window.MathJax?.typesetClear) window.MathJax.typesetClear([answerText]);
+
+  if (window.MathJax?.typesetPromise) {
+    try { await window.MathJax.typesetPromise([answerText]); } catch {}
+  }
+}
+
+function showResult(status, formula = "", answer = "") {
   statusText.textContent = status;
   formulaText.textContent = formula;
   answerText.textContent = answer;
 }
 
-async function renderMath() {
-  if (window.MathJax?.typesetClear) {
-    window.MathJax.typesetClear([answerText]);
-  }
-
-  if (window.MathJax?.typesetPromise) {
-    try {
-      await window.MathJax.typesetPromise([answerText]);
-    } catch {}
-  }
-}
-
-// 좌우 계산기 모두 방정식 풀이를 지원합니다.
-function calculateInput(raw) {
-  const original = raw.trim();
-
-  if (!original) throw new Error("수식을 입력해 주세요.");
-
-  if (original.includes("=") || /(?:제곱|더하기|빼기|루트|분의|곱하기|나누기)/.test(original)) {
-    const eq = solveEquation(original);
-
-    if (eq) {
-      return {
-        equation: true,
-        normalized: eq.normalized,
-        answer: eq.display
-      };
-    }
-  }
-
-  if (original.includes("=")) {
-    const eq = solveEquation(original);
-    if (eq) return {equation: true, normalized: eq.normalized, answer: eq.display};
-  }
-
-  const normalized = prepareExpression(original);
-  const value = calculateExpression(tokenize(normalized));
-
-  return {
-    equation: false,
-    normalized,
-    answer: "결과: " + Number(value.toPrecision(12)).toString()
-  };
-}
-
 async function performLocalCalculation(raw) {
   try {
-    const result = calculateInput(raw);
+    const original = raw.trim();
+    if (!original) throw new Error("수식을 입력해 주세요.");
 
-    if (result.equation) {
-      setResultStatus("방정식 풀이 완료", "입력한 방정식: " + result.normalized, result.answer);
+    if (original.includes("=")) {
+      const solved = solveEquation(original);
+
+      showResult("방정식 풀이 완료", "입력한 방정식: " + solved.normalized, solved.display);
       await renderMath();
-    } else {
-      setResultStatus("계산 완료", "변환한 수식: " + result.normalized, result.answer);
+      return;
     }
+
+    const normalized = prepareExpression(original);
+    const value = calculateExpression(tokenize(normalized));
+
+    showResult(
+      "계산 완료",
+      "변환한 수식: " + normalized,
+      "결과: " + fmtNumber(value)
+    );
   } catch (error) {
-    setResultStatus("계산할 수 없습니다.", error.message, "");
+    showResult("계산할 수 없습니다.", error.message, "");
   }
 }
 
-// 키패드
-const keyLayouts = {
+document.getElementById("localFromEditor").addEventListener("click", () => {
+  performLocalCalculation(editor.value);
+});
+
+document.getElementById("calcForm").addEventListener("submit", event => {
+  event.preventDefault();
+  performLocalCalculation(input.value);
+});
+
+const layouts = {
   main: [
     ["(", "("], [")", ")"], ["x²", "^2"], ["xʸ", "^"], ["√", "sqrt("],
-    ["7", "7"], ["8", "8"], ["9", "9"], ["÷", "/"], ["a/b", "()/()", 1],
-    ["4", "4"], ["5", "5"], ["6", "6"], ["×", "*"], ["π", "pi"],
-    ["1", "1"], ["2", "2"], ["3", "3"], ["−", "-"], ["+", "+"],
-    ["0", "0"], [".", "."], ["sin", "sin("], ["cos", "cos("], ["tan", "tan("],
-    ["x", "x"], ["=", "="], ["y", "y"], ["z", "z"], ["^3", "^3"]
+    ["7","7"],["8","8"],["9","9"],["÷","/"],["a/b","()/()",1],
+    ["4","4"],["5","5"],["6","6"],["×","*"],["π","pi"],
+    ["1","1"],["2","2"],["3","3"],["−","-"],["+","+"],
+    ["0","0"],[".","."],["sin","sin("],["cos","cos("],["tan","tan("],
+    ["x","x"],["=","="],["y","y"],["z","z"],["^3","^3"]
   ],
   letters: [
-    ["x", "x"], ["y", "y"], ["z", "z"], ["a", "a"], ["b", "b"],
-    ["c", "c"], ["m", "m"], ["t", "t"], ["V", "V"], ["I", "I"],
-    ["R", "R"], ["P", "P"], ["L", "L"], ["C", "C"], ["F", "F"],
-    ["(", "("], [")", ")"], ["=", "="], ["+", "+"], ["−", "-"],
-    ["×", "*"], ["÷", "/"], ["^", "^"], ["π", "pi"], [".", "."]
+    ["x","x"],["y","y"],["z","z"],["a","a"],["b","b"],
+    ["c","c"],["m","m"],["t","t"],["V","V"],["I","I"],
+    ["R","R"],["P","P"],["L","L"],["C","C"],["F","F"],
+    ["(","("],[")",")"],["=","="],["+","+"],["−","-"],
+    ["×","*"],["÷","/"],["^","^"],["π","pi"],[".","."]
   ],
   functions: [
-    ["sin(", "sin("], ["cos(", "cos("], ["tan(", "tan("], ["√", "sqrt("], ["log(", "log("],
-    ["ln(", "ln("], ["π", "pi"], ["e", "e"], ["x²", "^2"], ["xʸ", "^"],
-    ["(", "("], [")", ")"], ["=", "="], ["+", "+"], ["−", "-"],
-    ["×", "*"], ["÷", "/"], ["a/b", "()/()", 1], ["x", "x"], ["^3", "^3"]
+    ["sin(","sin("],["cos(","cos("],["tan(","tan("],["√","sqrt("],["log(","log("],
+    ["ln(","ln("],["π","pi"],["e","e"],["x²","^2"],["xʸ","^"],
+    ["(","("],[")",")"],["=","="],["+","+"],["−","-"],
+    ["×","*"],["÷","/"],["a/b","()/()",1],["x","x"],["^3","^3"]
   ]
 };
 
@@ -719,8 +845,8 @@ function insertAtCursor(text, offset) {
   const end = editor.selectionEnd ?? editor.value.length;
 
   editor.setRangeText(text, start, end, "end");
-
   const caret = start + (Number.isInteger(offset) ? offset : text.length);
+
   editor.focus();
   editor.setSelectionRange(caret, caret);
 }
@@ -728,17 +854,17 @@ function insertAtCursor(text, offset) {
 function renderKeys(tab) {
   keyGrid.replaceChildren();
 
-  for (const [label, value, caret] of keyLayouts[tab]) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "key";
-    button.textContent = label;
+  for (const [label, value, caret] of layouts[tab]) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "key";
 
-    if (["+", "-", "*", "/", "^", "="].includes(value)) button.classList.add("operator");
-    if (["sqrt(", "sin(", "cos(", "tan(", "pi", "log(", "ln("].includes(value)) button.classList.add("function");
+    if (["+", "-", "*", "/", "^", "="].includes(value)) b.classList.add("operator");
+    if (["sqrt(", "sin(", "cos(", "tan(", "pi", "log(", "ln("].includes(value)) b.classList.add("function");
 
-    button.addEventListener("click", () => insertAtCursor(value, caret));
-    keyGrid.appendChild(button);
+    b.textContent = label;
+    b.addEventListener("click", () => insertAtCursor(value, caret));
+    keyGrid.appendChild(b);
   }
 
   document.querySelectorAll(".tab").forEach(b => {
@@ -760,7 +886,7 @@ document.getElementById("backspaceButton").addEventListener("click", () => {
   const end = editor.selectionEnd;
 
   if (start !== end) editor.setRangeText("", start, end, "end");
-  else if (start > 0) editor.setRangeText("", start - 1, end, "end");
+  else if (start > 0) editor.setRangeText("", start-1, end, "end");
 
   editor.focus();
 });
@@ -784,56 +910,35 @@ document.querySelectorAll(".example-item").forEach(b => {
   });
 });
 
-calcForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  await performLocalCalculation(input.value);
-});
+const aiButton = document.getElementById("aiButton");
 
-document.getElementById("localFromEditor").addEventListener("click", async () => {
-  await performLocalCalculation(editor.value);
-});
-
-// 오른쪽 AI 기능은 그대로 유지합니다.
 aiButton.addEventListener("click", async () => {
   const question = input.value.trim();
-
   if (!question) {
-    setResultStatus("질문을 입력해 주세요.");
+    showResult("질문을 입력해 주세요.");
     input.focus();
     return;
   }
 
   aiButton.disabled = true;
   aiButton.textContent = "AI가 풀이 중...";
-  setResultStatus("AI에 질문을 보내고 있습니다.");
+  showResult("AI에 질문을 보내고 있습니다.");
 
   try {
     const response = await fetch(AI_API_URL, {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: {"Content-Type":"application/json"},
       body: JSON.stringify({question})
     });
 
     const data = await response.json().catch(() => ({}));
-
     if (!response.ok) throw new Error(data.error || "AI 요청에 실패했습니다.");
     if (!data.answer) throw new Error("AI가 답변을 반환하지 않았습니다.");
 
-    if (window.MathJax?.typesetClear) window.MathJax.typesetClear([answerText]);
-
-    statusText.textContent = "AI 풀이 완료";
-    formulaText.textContent = "질문: " + question;
-    answerText.textContent = data.answer;
-
+    showResult("AI 풀이 완료", "질문: " + question, data.answer);
     await renderMath();
   } catch (error) {
-    setResultStatus(
-      "AI 요청 실패",
-      "",
-      error.name === "TypeError"
-        ? "서버 연결을 확인해 주세요."
-        : error.message
-    );
+    showResult("AI 요청 실패", "", error.message);
   } finally {
     aiButton.disabled = false;
     aiButton.textContent = "AI로 공학 문제 풀이";
