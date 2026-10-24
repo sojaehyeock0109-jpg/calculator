@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공학 계산기</title>
+</head>
+<body>
+  <h1>공학 계산기</h1>
+  <p>수식을 입력하면 결과를 계산합니다.</p>
+
+  <input id="expression" placeholder="예: 2 + 3 * 5">
+  <button onclick="calculate()">계산하기</button>
+  <p id="result">결과가 여기에 표시됩니다.</p>
+
+  <script>
+    function calculate() {
+      const input = document.getElementById("expression").value;
+      const result = document.getElementById("result");
+
+      // 첫 단계에서는 안전한 사칙연산만 지원합니다.
+      if (!/^[0-9+\-*/().\s]+$/.test(input)) {
+        result.textContent = "숫자와 사칙연산 기호만 입력해 주세요.";
+        return;
+      }
+
+      try {
+        const value = Function('"use strict"; return (' + input + ')')();
+
+        if (!Number.isFinite(value)) {
+          throw new Error("잘못된 계산");
+        }
+
+        result.textContent = "결과: " + value;
+      } catch {
+        result.textContent = "수식을 확인해 주세요.";
+      }
+    }
+  </script>
+</body>
+</html>
