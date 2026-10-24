@@ -59,8 +59,6 @@
     }
 
     h1 { font-size: 26px; margin: 0 0 12px; }
-    h2 { font-size: 21px; margin: 0 0 10px; }
-
     p { line-height: 1.65; }
 
     .subtext {
@@ -69,9 +67,7 @@
       line-height: 1.7;
     }
 
-    input, textarea, button {
-      font: inherit;
-    }
+    input, textarea, button { font: inherit; }
 
     input, textarea {
       width: 100%;
@@ -98,25 +94,11 @@
     button:active { transform: scale(0.98); }
     button:disabled { opacity: 0.55; cursor: wait; }
 
-    .primary {
-      color: white;
-      background: var(--blue);
-    }
-
+    .primary { color: white; background: var(--blue); }
     .primary:hover { background: #1d4ed8; }
-
-    .ai-button {
-      color: white;
-      background: var(--purple);
-    }
-
+    .ai-button { color: white; background: var(--purple); }
     .ai-button:hover { background: #5b21b6; }
-
-    .secondary {
-      color: #334155;
-      background: #e9eef6;
-    }
-
+    .secondary { color: #334155; background: #e9eef6; }
     .secondary:hover { background: #dbe4f0; }
 
     /* 왼쪽 수식 편집기 */
@@ -125,7 +107,7 @@
       padding: 12px;
       border: 1px solid var(--border);
       border-radius: 12px;
-      background: #fff;
+      background: white;
     }
 
     #formulaEditor {
@@ -138,14 +120,13 @@
       line-height: 1.7;
     }
 
+    /* 왼쪽에는 계산 버튼 하나만 배치 */
     .editor-actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 8px;
       margin-top: 12px;
     }
-
-    .editor-actions button { min-width: 0; }
 
     .keyboard-header {
       display: flex;
@@ -203,21 +184,9 @@
     }
 
     .key:hover { background: #dfe8f5; }
-
-    .key.operator {
-      color: #1d4ed8;
-      background: #e8f0ff;
-    }
-
-    .key.function {
-      background: #f1eafe;
-      color: #6d28d9;
-    }
-
-    .key.utility {
-      background: #dce5f2;
-      font-weight: 700;
-    }
+    .key.operator { color: #1d4ed8; background: #e8f0ff; }
+    .key.function { color: #6d28d9; background: #f1eafe; }
+    .key.utility { background: #dce5f2; font-weight: 700; }
 
     .keyboard-footer {
       display: grid;
@@ -310,7 +279,6 @@
     }
 
     @media (max-width: 450px) {
-      .editor-actions { grid-template-columns: 1fr; }
       .key-grid { gap: 5px; }
       .key { min-height: 42px; font-size: 15px; }
       .panel { padding: 16px; }
@@ -321,11 +289,11 @@
 <body>
 <div class="layout">
 
-  <!-- 왼쪽: 수식 입력기와 가상 키패드 -->
+  <!-- 왼쪽: 수식 입력 및 일반 계산 전용 -->
   <section class="panel">
     <h1>수식 입력기</h1>
     <p class="subtext">
-      키패드로 수식을 입력하고 오른쪽 계산기로 보내세요.
+      숫자와 수학 기호를 입력해 계산하세요.
     </p>
 
     <div class="editor-box">
@@ -339,10 +307,7 @@
 
     <div class="editor-actions">
       <button class="primary" id="localFromEditor" type="button">
-        수식 계산
-      </button>
-      <button class="ai-button" id="aiFromEditor" type="button">
-        AI로 풀이
+        수식 계산하기
       </button>
     </div>
 
@@ -368,13 +333,13 @@
 
     <div class="key-hint">
       <strong>사용법</strong><br>
-      √ 버튼은 <code>sqrt(</code>, 거듭제곱은 <code>^</code>로 입력돼.
-      분수 버튼은 분자와 분모를 괄호로 입력할 수 있도록 도와줘.
-      문자가 포함된 공식은 AI로 보낼 수 있어.
+      √는 제곱근, x²는 제곱, a/b는 분수 입력을 시작합니다.
+      숫자와 연산 기호를 이용한 일반적인 수식을 계산할 수 있습니다.
+      이 영역에는 AI 호출 기능이 없습니다.
     </div>
   </section>
 
-  <!-- 오른쪽: 기존 공학 계산기 화면 -->
+  <!-- 오른쪽: 기존 공학 계산기와 AI 기능 -->
   <section class="panel">
     <h1>공학 계산기 AI</h1>
     <p class="subtext">
@@ -419,7 +384,7 @@
 
     <p class="right-footnote">
       AI 풀이에는 인터넷 연결과 API 사용량이 필요합니다.
-      수식 계산 기능은 별도로 작동합니다.
+      왼쪽 수식 입력기는 AI를 호출하지 않습니다.
     </p>
   </section>
 
@@ -436,7 +401,6 @@ const statusText = document.getElementById("status");
 const formulaText = document.getElementById("formula");
 const answerText = document.getElementById("answer");
 const aiButton = document.getElementById("aiButton");
-const aiFromEditor = document.getElementById("aiFromEditor");
 const localFromEditor = document.getElementById("localFromEditor");
 const keyGrid = document.getElementById("keyGrid");
 
@@ -513,8 +477,7 @@ const keyLayouts = {
     {label: "^", value: "^", cls: "operator"},
     {label: "(", value: "("},
     {label: ")", value: ")"},
-    {label: "a/b", value: "()/()", caret: 1, cls: "function"},
-    {label: "abs", value: "abs(", cls: "function"}
+    {label: "a/b", value: "()/()", caret: 1, cls: "function"}
   ]
 };
 
@@ -526,9 +489,11 @@ function renderKeys(tab) {
     button.type = "button";
     button.className = "key" + (key.cls ? " " + key.cls : "");
     button.textContent = key.label;
+
     button.addEventListener("click", () => {
       insertAtCursor(key.value, key.caret);
     });
+
     keyGrid.appendChild(button);
   }
 
@@ -594,7 +559,6 @@ document.querySelectorAll(".example-item").forEach(button => {
   });
 });
 
-// 한국어 수학 표현을 계산 가능한 수식으로 변환합니다.
 function prepareExpression(raw) {
   if (raw.length > 300) {
     throw new Error("수식은 300자 이하로 입력해 주세요.");
@@ -762,7 +726,11 @@ function calculateExpression(tokens) {
 
     if (take("(")) {
       const value = expression();
-      if (!take(")")) throw new Error("닫는 괄호가 필요합니다.");
+
+      if (!take(")")) {
+        throw new Error("닫는 괄호가 필요합니다.");
+      }
+
       return value;
     }
 
@@ -773,9 +741,7 @@ function calculateExpression(tokens) {
       if (name === "pi") return Math.PI;
       if (name === "e") return Math.E;
 
-      const allowed = ["sqrt", "sin", "cos", "tan", "log", "ln"];
-
-      if (!allowed.includes(name)) {
+      if (!["sqrt", "sin", "cos", "tan", "log", "ln"].includes(name)) {
         throw new Error("지원하지 않는 함수: " + name);
       }
 
@@ -783,13 +749,19 @@ function calculateExpression(tokens) {
 
       if (take("(")) {
         a = expression();
-        if (!take(")")) throw new Error("함수 괄호가 닫히지 않았습니다.");
+
+        if (!take(")")) {
+          throw new Error("함수 괄호가 닫히지 않았습니다.");
+        }
       } else {
         a = unary();
       }
 
       if (name === "sqrt") {
-        if (a < 0) throw new Error("음수의 제곱근은 실수 범위에서 계산할 수 없습니다.");
+        if (a < 0) {
+          throw new Error("음수의 제곱근은 실수 범위에서 계산할 수 없습니다.");
+        }
+
         return Math.sqrt(a);
       }
 
@@ -830,11 +802,13 @@ function setResultStatus(status, formula = "", answer = "") {
   answerText.textContent = answer;
 }
 
+// 오른쪽의 일반 수식 계산
 calcForm.addEventListener("submit", function(event) {
   event.preventDefault();
 
   try {
     const original = input.value.trim();
+
     if (!original) throw new Error("수식을 입력해 주세요.");
 
     const normalized = prepareExpression(original);
@@ -850,30 +824,18 @@ calcForm.addEventListener("submit", function(event) {
   }
 });
 
-// 왼쪽 수식을 오른쪽 입력창으로 옮깁니다.
-function copyEditorToRight() {
+// 왼쪽 수식을 오른쪽 입력창으로 보내 일반 계산만 실행합니다.
+localFromEditor.addEventListener("click", () => {
   const expression = editor.value.trim();
 
   if (!expression) {
     setResultStatus("수식을 입력해 주세요.", "", "");
     editor.focus();
-    return false;
+    return;
   }
 
   input.value = expression;
-  return true;
-}
-
-localFromEditor.addEventListener("click", () => {
-  if (copyEditorToRight()) {
-    calcForm.requestSubmit();
-  }
-});
-
-aiFromEditor.addEventListener("click", () => {
-  if (copyEditorToRight()) {
-    aiButton.click();
-  }
+  calcForm.requestSubmit();
 });
 
 function renderMath() {
@@ -884,6 +846,7 @@ function renderMath() {
   return Promise.resolve();
 }
 
+// 오른쪽의 AI 공학 문제 풀이 기능만 유지
 aiButton.addEventListener("click", async function() {
   const question = input.value.trim();
 
@@ -894,14 +857,13 @@ aiButton.addEventListener("click", async function() {
   }
 
   aiButton.disabled = true;
-  aiFromEditor.disabled = true;
   aiButton.textContent = "AI가 풀이 중...";
   setResultStatus("AI에 질문을 보내고 있습니다.");
 
   try {
     const response = await fetch(AI_API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({question})
     });
 
@@ -934,17 +896,15 @@ aiButton.addEventListener("click", async function() {
       "AI 요청 실패",
       "",
       error.name === "TypeError"
-        ? "서버에 연결하지 못했습니다. Worker 주소와 배포 상태를 확인해 주세요."
+        ? "서버 연결을 확인해 주세요."
         : error.message
     );
   } finally {
     aiButton.disabled = false;
-    aiFromEditor.disabled = false;
     aiButton.textContent = "AI로 공학 문제 풀이";
   }
 });
 
-// 기본 키패드 표시
 renderKeys("main");
 </script>
 </body>
