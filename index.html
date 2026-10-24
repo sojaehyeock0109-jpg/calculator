@@ -436,13 +436,31 @@ function solveEquation(raw) {
     .filter(Boolean);
 
   const latexRoots = roots.map(root => {
-    try {
-      const tex = window.nerdamer(root).toTeX();
-      return `\\(${variable} = ${tex}\\)`;
-    } catch {
-      return `\\(${variable} = ${root}\\)`;
+  // 큰 정수 분수는 읽기 쉬운 소수로 표시
+  const fraction = root.match(/^([+-]?\d+)\/(\d+)$/);
+
+  if (
+    fraction &&
+    (
+      fraction[1].replace("-", "").length > 6 ||
+      fraction[2].length > 6
+    )
+  ) {
+    const value = Number(fraction[1]) / Number(fraction[2]);
+
+    if (Number.isFinite(value)) {
+      return `\\(${variable} \\approx ${value.toFixed(4)}\\)`;
     }
-  });
+  }
+
+  // 간단한 정수와 분수, 기호식은 기존 표현을 유지
+  try {
+    const tex = window.nerdamer(root).toTeX();
+    return `\\(${variable} = ${tex}\\)`;
+  } catch {
+    return `\\(${variable} = ${root}\\)`;
+  }
+});
 
   return {
     normalized,
