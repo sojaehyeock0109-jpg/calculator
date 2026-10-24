@@ -18,75 +18,272 @@
       }
     };
   </script>
-  <script
-    id="MathJax-script"
-    async
-    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
-  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
   <style>
     * { box-sizing: border-box; }
 
+    :root {
+      --blue: #2563eb;
+      --purple: #6d28d9;
+      --bg: #f2f5fb;
+      --border: #dbe2ec;
+      --muted: #64748b;
+      --text: #172033;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      max-width: 960px;
-      margin: 32px auto;
-      padding: 16px;
-      background: #f3f6fb;
-      color: #1f2937;
+      margin: 0;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Malgun Gothic", sans-serif;
     }
 
-    .app {
-      background: white;
-      padding: 28px;
-      border-radius: 18px;
-      box-shadow: 0 6px 24px #0000000c;
-    }
-
-    h1 { margin-top: 0; }
-
-    input, button {
-      font: inherit;
-      padding: 13px;
-      border-radius: 9px;
-    }
-
-    input {
+    .layout {
       width: 100%;
-      margin: 12px 0;
+      max-width: 1500px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(320px, 0.92fr) minmax(420px, 1.08fr);
+      align-items: start;
+      gap: 22px;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 24px;
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 6px 24px #1720330a;
+    }
+
+    h1 { font-size: 26px; margin: 0 0 12px; }
+    h2 { font-size: 21px; margin: 0 0 10px; }
+
+    p { line-height: 1.65; }
+
+    .subtext {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    input, textarea, button {
+      font: inherit;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 13px;
       border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      color: var(--text);
+      background: white;
+    }
+
+    input:focus, textarea:focus {
+      outline: 2px solid #bfdbfe;
+      border-color: var(--blue);
     }
 
     button {
-      border: 0;
-      background: #2563eb;
-      color: white;
       cursor: pointer;
-      margin: 3px 3px 3px 0;
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 14px;
+      transition: background 0.15s, transform 0.05s;
     }
 
-    button:hover { background: #1d4ed8; }
-    button:disabled { opacity: 0.6; cursor: wait; }
-    .ai-button { background: #6d28d9; }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.55; cursor: wait; }
+
+    .primary {
+      color: white;
+      background: var(--blue);
+    }
+
+    .primary:hover { background: #1d4ed8; }
+
+    .ai-button {
+      color: white;
+      background: var(--purple);
+    }
+
     .ai-button:hover { background: #5b21b6; }
 
+    .secondary {
+      color: #334155;
+      background: #e9eef6;
+    }
+
+    .secondary:hover { background: #dbe4f0; }
+
+    /* 왼쪽 수식 편집기 */
+    .editor-box {
+      min-height: 200px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    #formulaEditor {
+      min-height: 175px;
+      resize: vertical;
+      border: 0;
+      outline: none;
+      box-shadow: none;
+      font-size: 21px;
+      line-height: 1.7;
+    }
+
+    .editor-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .editor-actions button { min-width: 0; }
+
+    .keyboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 20px 0 12px;
+    }
+
+    .tabs, .angle-modes {
+      display: flex;
+      gap: 5px;
+    }
+
+    .tab {
+      padding: 9px 12px;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 8px;
+    }
+
+    .tab.active {
+      color: var(--blue);
+      background: #eff6ff;
+      font-weight: 700;
+    }
+
+    .angle {
+      padding: 8px 10px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 12px;
+    }
+
+    .angle.active {
+      color: white;
+      background: #475569;
+    }
+
+    .key-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .key {
+      min-width: 0;
+      min-height: 46px;
+      padding: 8px 3px;
+      background: #edf1f7;
+      color: #1e293b;
+      border: 1px solid #dce3ed;
+      font-size: 17px;
+    }
+
+    .key:hover { background: #dfe8f5; }
+
+    .key.operator {
+      color: #1d4ed8;
+      background: #e8f0ff;
+    }
+
+    .key.function {
+      background: #f1eafe;
+      color: #6d28d9;
+    }
+
+    .key.utility {
+      background: #dce5f2;
+      font-weight: 700;
+    }
+
+    .keyboard-footer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .key-hint {
+      margin-top: 14px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 9px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* 오른쪽 기존 계산기 */
+    .right-input { margin-top: 16px; }
+
+    .main-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 8px;
+    }
+
     .examples {
-      color: #64748b;
-      font-size: 14px;
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 13px;
       line-height: 1.9;
-      margin-top: 18px;
+    }
+
+    .example-item {
+      display: block;
+      padding: 2px 0;
+      text-align: left;
+      color: #526581;
+      background: transparent;
+      border-radius: 0;
+    }
+
+    .example-item:hover {
+      color: var(--blue);
+      text-decoration: underline;
     }
 
     .result {
+      min-height: 120px;
       margin-top: 22px;
       padding: 20px;
-      background: #eff6ff;
       border-radius: 12px;
+      background: #eff6ff;
+      overflow-wrap: anywhere;
+    }
+
+    #formula {
+      color: #526581;
+      line-height: 1.7;
       overflow-wrap: anywhere;
     }
 
     #answer {
-      font-size: 17px;
+      font-size: 16px;
       line-height: 1.9;
       overflow-wrap: anywhere;
     }
@@ -97,65 +294,307 @@
       overflow-y: hidden;
     }
 
-    #formula { color: #475569; overflow-wrap: anywhere; }
+    .status { font-weight: 700; }
 
-    @media (max-width: 500px) {
-      .app { padding: 20px; }
-      body { margin: 12px auto; }
-      button { width: 100%; margin: 4px 0; }
+    .right-footnote {
+      margin-top: 15px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 1000px) {
+      body { padding: 14px; }
+      .layout { grid-template-columns: 1fr; }
+      .panel { padding: 20px; }
+    }
+
+    @media (max-width: 450px) {
+      .editor-actions { grid-template-columns: 1fr; }
+      .key-grid { gap: 5px; }
+      .key { min-height: 42px; font-size: 15px; }
+      .panel { padding: 16px; }
     }
   </style>
 </head>
 
 <body>
-<main class="app">
-  <h1>공학 계산기 AI</h1>
-  <p>수식을 계산하거나 AI에게 공학 문제를 질문해 보세요.</p>
+<div class="layout">
 
-  <form id="calcForm">
-    <input
-      id="expression"
-      placeholder="예: 2의3제곱 또는 RLC 회로의 공진 주파수를 설명해 줘."
-      autocomplete="off"
-    >
-    <button type="submit">수식 계산하기</button>
-    <button type="button" class="ai-button" id="aiButton">
-      AI로 공학 문제 풀이
-    </button>
-  </form>
+  <!-- 왼쪽: 수식 입력기와 가상 키패드 -->
+  <section class="panel">
+    <h1>수식 입력기</h1>
+    <p class="subtext">
+      키패드로 수식을 입력하고 오른쪽 계산기로 보내세요.
+    </p>
 
-  <div class="examples">
-    <strong>수식 계산 예시</strong><br>
-    루트 16<br>
-    3의 제곱 더하기 2<br>
-    2의3제곱<br>
-    2분의 3 곱하기 10<br>
-    사인 30도 더하기 코사인 60도<br><br>
+    <div class="editor-box">
+      <textarea
+        id="formulaEditor"
+        aria-label="수식 입력"
+        placeholder="예: sqrt(16) + 3^2"
+        spellcheck="false"
+      ></textarea>
+    </div>
 
-    <strong>AI 질문 예시</strong><br>
-    전압 12V, 저항 4옴일 때 전류를 구해 줘.<br>
-    저항 10옴과 20옴이 병렬일 때 합성저항을 구해 줘.<br>
-    RLC 회로의 공진 주파수 공식을 설명해 줘.
-  </div>
+    <div class="editor-actions">
+      <button class="primary" id="localFromEditor" type="button">
+        수식 계산
+      </button>
+      <button class="ai-button" id="aiFromEditor" type="button">
+        AI로 풀이
+      </button>
+    </div>
 
-  <section class="result" aria-live="polite">
-    <strong id="status">계산 결과 또는 AI 풀이가 여기에 표시됩니다.</strong>
-    <p id="formula"></p>
-    <div id="answer"></div>
+    <div class="keyboard-header">
+      <div class="tabs" role="tablist" aria-label="키패드 종류">
+        <button class="tab active" data-tab="main" type="button">주요</button>
+        <button class="tab" data-tab="letters" type="button">문자</button>
+        <button class="tab" data-tab="functions" type="button">함수</button>
+      </div>
+
+      <div class="angle-modes" aria-label="각도 단위">
+        <button class="angle active" id="degButton" type="button">각도법 DEG</button>
+        <button class="angle" id="radButton" type="button">호도법 RAD</button>
+      </div>
+    </div>
+
+    <div class="key-grid" id="keyGrid"></div>
+
+    <div class="keyboard-footer">
+      <button class="secondary" id="backspaceButton" type="button">⌫ 한 글자 지우기</button>
+      <button class="secondary" id="clearButton" type="button">AC 전체 지우기</button>
+    </div>
+
+    <div class="key-hint">
+      <strong>사용법</strong><br>
+      √ 버튼은 <code>sqrt(</code>, 거듭제곱은 <code>^</code>로 입력돼.
+      분수 버튼은 분자와 분모를 괄호로 입력할 수 있도록 도와줘.
+      문자가 포함된 공식은 AI로 보낼 수 있어.
+    </div>
   </section>
-</main>
+
+  <!-- 오른쪽: 기존 공학 계산기 화면 -->
+  <section class="panel">
+    <h1>공학 계산기 AI</h1>
+    <p class="subtext">
+      수식을 계산하거나 AI에게 공학 문제를 질문해 보세요.
+    </p>
+
+    <form id="calcForm">
+      <input
+        id="expression"
+        class="right-input"
+        placeholder="예: 2의3제곱 또는 전압 12V, 저항 4옴일 때 전류"
+        autocomplete="off"
+      >
+
+      <div class="main-actions">
+        <button class="primary" type="submit">수식 계산하기</button>
+        <button class="ai-button" id="aiButton" type="button">
+          AI로 공학 문제 풀이
+        </button>
+      </div>
+    </form>
+
+    <div class="examples">
+      <strong>수식 계산 예시</strong><br>
+      <button class="example-item" data-example="루트 16" type="button">루트 16</button>
+      <button class="example-item" data-example="3의 제곱 더하기 2" type="button">3의 제곱 더하기 2</button>
+      <button class="example-item" data-example="2의3제곱" type="button">2의3제곱</button>
+      <button class="example-item" data-example="2분의 3 곱하기 10" type="button">2분의 3 곱하기 10</button>
+      <button class="example-item" data-example="사인 30도 더하기 코사인 60도" type="button">사인 30도 더하기 코사인 60도</button>
+
+      <br><strong>AI 질문 예시</strong><br>
+      <button class="example-item" data-example="전압 12V, 저항 4옴일 때 전류를 구해 줘." type="button">전압 12V, 저항 4옴일 때 전류</button>
+      <button class="example-item" data-example="저항 10옴과 20옴이 병렬일 때 합성저항을 구해 줘." type="button">병렬저항 계산</button>
+      <button class="example-item" data-example="인덕턴스 0.1H, 정전용량 100μF인 이상적인 LC 회로의 공진 주파수를 구해 줘." type="button">LC 공진 주파수 계산</button>
+    </div>
+
+    <section class="result" aria-live="polite">
+      <strong class="status" id="status">계산 결과 또는 AI 풀이가 여기에 표시됩니다.</strong>
+      <p id="formula"></p>
+      <div id="answer"></div>
+    </section>
+
+    <p class="right-footnote">
+      AI 풀이에는 인터넷 연결과 API 사용량이 필요합니다.
+      수식 계산 기능은 별도로 작동합니다.
+    </p>
+  </section>
+
+</div>
 
 <script>
 const AI_API_URL =
   "https://calculator.sojaehyeock0109.workers.dev/api/solve";
 
-const form = document.getElementById("calcForm");
+const editor = document.getElementById("formulaEditor");
+const calcForm = document.getElementById("calcForm");
 const input = document.getElementById("expression");
 const statusText = document.getElementById("status");
 const formulaText = document.getElementById("formula");
 const answerText = document.getElementById("answer");
 const aiButton = document.getElementById("aiButton");
+const aiFromEditor = document.getElementById("aiFromEditor");
+const localFromEditor = document.getElementById("localFromEditor");
+const keyGrid = document.getElementById("keyGrid");
 
+let angleMode = "deg";
+
+const keyLayouts = {
+  main: [
+    {label: "(", value: "("},
+    {label: ")", value: ")"},
+    {label: "x²", value: "^2", cls: "operator"},
+    {label: "xʸ", value: "^", cls: "operator"},
+    {label: "√", value: "sqrt(", cls: "function"},
+    {label: "7", value: "7"},
+    {label: "8", value: "8"},
+    {label: "9", value: "9"},
+    {label: "÷", value: "/", cls: "operator"},
+    {label: "a/b", value: "()/()", caret: 1, cls: "function"},
+    {label: "4", value: "4"},
+    {label: "5", value: "5"},
+    {label: "6", value: "6"},
+    {label: "×", value: "*", cls: "operator"},
+    {label: "π", value: "pi", cls: "function"},
+    {label: "1", value: "1"},
+    {label: "2", value: "2"},
+    {label: "3", value: "3"},
+    {label: "−", value: "-", cls: "operator"},
+    {label: "+", value: "+", cls: "operator"},
+    {label: "0", value: "0"},
+    {label: ".", value: "."},
+    {label: "sin", value: "sin(", cls: "function"},
+    {label: "cos", value: "cos(", cls: "function"},
+    {label: "tan", value: "tan(", cls: "function"}
+  ],
+
+  letters: [
+    {label: "V", value: "V"},
+    {label: "I", value: "I"},
+    {label: "R", value: "R"},
+    {label: "P", value: "P"},
+    {label: "E", value: "E"},
+    {label: "L", value: "L"},
+    {label: "C", value: "C"},
+    {label: "m", value: "m"},
+    {label: "F", value: "F"},
+    {label: "t", value: "t"},
+    {label: "x", value: "x"},
+    {label: "y", value: "y"},
+    {label: "z", value: "z"},
+    {label: "θ", value: "theta"},
+    {label: "ω", value: "omega"},
+    {label: "(", value: "("},
+    {label: ")", value: ")"},
+    {label: "=", value: "="},
+    {label: "+", value: "+"},
+    {label: "−", value: "-"},
+    {label: "×", value: "*"},
+    {label: "÷", value: "/"},
+    {label: "^", value: "^"},
+    {label: "π", value: "pi"},
+    {label: " ", value: " "}
+  ],
+
+  functions: [
+    {label: "sin(", value: "sin(", cls: "function"},
+    {label: "cos(", value: "cos(", cls: "function"},
+    {label: "tan(", value: "tan(", cls: "function"},
+    {label: "√", value: "sqrt(", cls: "function"},
+    {label: "log(", value: "log(", cls: "function"},
+    {label: "ln(", value: "ln(", cls: "function"},
+    {label: "π", value: "pi", cls: "function"},
+    {label: "e", value: "e", cls: "function"},
+    {label: "^2", value: "^2", cls: "operator"},
+    {label: "^3", value: "^3", cls: "operator"},
+    {label: "^", value: "^", cls: "operator"},
+    {label: "(", value: "("},
+    {label: ")", value: ")"},
+    {label: "a/b", value: "()/()", caret: 1, cls: "function"},
+    {label: "abs", value: "abs(", cls: "function"}
+  ]
+};
+
+function renderKeys(tab) {
+  keyGrid.replaceChildren();
+
+  for (const key of keyLayouts[tab]) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "key" + (key.cls ? " " + key.cls : "");
+    button.textContent = key.label;
+    button.addEventListener("click", () => {
+      insertAtCursor(key.value, key.caret);
+    });
+    keyGrid.appendChild(button);
+  }
+
+  document.querySelectorAll(".tab").forEach(button => {
+    button.classList.toggle("active", button.dataset.tab === tab);
+  });
+}
+
+function insertAtCursor(text, caretOffset) {
+  const start = editor.selectionStart ?? editor.value.length;
+  const end = editor.selectionEnd ?? editor.value.length;
+
+  editor.setRangeText(text, start, end, "end");
+
+  const caret = start + (
+    Number.isInteger(caretOffset) ? caretOffset : text.length
+  );
+
+  editor.focus();
+  editor.setSelectionRange(caret, caret);
+}
+
+document.querySelectorAll(".tab").forEach(button => {
+  button.addEventListener("click", () => {
+    renderKeys(button.dataset.tab);
+  });
+});
+
+document.getElementById("clearButton").addEventListener("click", () => {
+  editor.value = "";
+  editor.focus();
+});
+
+document.getElementById("backspaceButton").addEventListener("click", () => {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+
+  if (start !== end) {
+    editor.setRangeText("", start, end, "end");
+  } else if (start > 0) {
+    editor.setRangeText("", start - 1, end, "end");
+  }
+
+  editor.focus();
+});
+
+document.getElementById("degButton").addEventListener("click", () => {
+  angleMode = "deg";
+  document.getElementById("degButton").classList.add("active");
+  document.getElementById("radButton").classList.remove("active");
+});
+
+document.getElementById("radButton").addEventListener("click", () => {
+  angleMode = "rad";
+  document.getElementById("radButton").classList.add("active");
+  document.getElementById("degButton").classList.remove("active");
+});
+
+document.querySelectorAll(".example-item").forEach(button => {
+  button.addEventListener("click", () => {
+    input.value = button.dataset.example;
+    input.focus();
+  });
+});
+
+// 한국어 수학 표현을 계산 가능한 수식으로 변환합니다.
 function prepareExpression(raw) {
   if (raw.length > 300) {
     throw new Error("수식은 300자 이하로 입력해 주세요.");
@@ -166,19 +605,16 @@ function prepareExpression(raw) {
     .replace(/÷/g, "/")
     .replace(/[−–]/g, "-");
 
-  // 2의3제곱 -> (2^3)
   s = s.replace(
     /(\d+(?:\.\d+)?)\s*의\s*(\d+(?:\.\d+)?)\s*제곱/g,
     "($1^$2)"
   );
 
-  // 2의세제곱 -> (2^3)
   s = s.replace(
     /(\d+(?:\.\d+)?)\s*의\s*세제곱/g,
     "($1^3)"
   );
 
-  // 2분의3 -> (3/2)
   s = s.replace(
     /(\d+(?:\.\d*)?|\.\d+)\s*분의\s*(\d+(?:\.\d*)?|\.\d+)/g,
     "($2/$1)"
@@ -226,7 +662,7 @@ function tokenize(s) {
     const number = rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
 
     if (number) {
-      tokens.push({ type: "number", value: Number(number[0]) });
+      tokens.push({type: "number", value: Number(number[0])});
       i += number[0].length;
       continue;
     }
@@ -234,13 +670,13 @@ function tokenize(s) {
     const name = rest.match(/^[a-z]+/);
 
     if (name) {
-      tokens.push({ type: "name", value: name[0] });
+      tokens.push({type: "name", value: name[0]});
       i += name[0].length;
       continue;
     }
 
     if ("+-*/^()".includes(s[i])) {
-      tokens.push({ type: "symbol", value: s[i] });
+      tokens.push({type: "symbol", value: s[i]});
       i++;
       continue;
     }
@@ -337,7 +773,9 @@ function calculateExpression(tokens) {
       if (name === "pi") return Math.PI;
       if (name === "e") return Math.E;
 
-      if (!["sqrt", "sin", "cos", "tan", "log", "ln"].includes(name)) {
+      const allowed = ["sqrt", "sin", "cos", "tan", "log", "ln"];
+
+      if (!allowed.includes(name)) {
         throw new Error("지원하지 않는 함수: " + name);
       }
 
@@ -355,9 +793,11 @@ function calculateExpression(tokens) {
         return Math.sqrt(a);
       }
 
-      if (name === "sin") return Math.sin(a * Math.PI / 180);
-      if (name === "cos") return Math.cos(a * Math.PI / 180);
-      if (name === "tan") return Math.tan(a * Math.PI / 180);
+      const angle = angleMode === "deg" ? a * Math.PI / 180 : a;
+
+      if (name === "sin") return Math.sin(angle);
+      if (name === "cos") return Math.cos(angle);
+      if (name === "tan") return Math.tan(angle);
 
       if (name === "log") {
         if (a <= 0) throw new Error("로그의 입력값은 0보다 커야 합니다.");
@@ -384,7 +824,13 @@ function calculateExpression(tokens) {
   return result;
 }
 
-form.addEventListener("submit", function(event) {
+function setResultStatus(status, formula = "", answer = "") {
+  statusText.textContent = status;
+  formulaText.textContent = formula;
+  answerText.textContent = answer;
+}
+
+calcForm.addEventListener("submit", function(event) {
   event.preventDefault();
 
   try {
@@ -394,56 +840,69 @@ form.addEventListener("submit", function(event) {
     const normalized = prepareExpression(original);
     const value = calculateExpression(tokenize(normalized));
 
-    statusText.textContent = "계산 완료";
-    formulaText.textContent = "변환한 수식: " + normalized;
-    answerText.textContent =
-      "결과: " + Number(value.toPrecision(12)).toString();
-
+    setResultStatus(
+      "계산 완료",
+      "변환한 수식: " + normalized,
+      "결과: " + Number(value.toPrecision(12)).toString()
+    );
   } catch (error) {
-    statusText.textContent = "계산할 수 없습니다.";
-    formulaText.textContent = error.message;
-    answerText.textContent = "";
+    setResultStatus("계산할 수 없습니다.", error.message, "");
   }
 });
 
-async function typesetAnswer() {
-  const started = Date.now();
+// 왼쪽 수식을 오른쪽 입력창으로 옮깁니다.
+function copyEditorToRight() {
+  const expression = editor.value.trim();
 
-  // MathJax 스크립트가 로드될 때까지 잠깐 기다립니다.
-  while (
-    !window.MathJax?.typesetPromise &&
-    Date.now() - started < 8000
-  ) {
-    await new Promise(resolve => setTimeout(resolve, 50));
+  if (!expression) {
+    setResultStatus("수식을 입력해 주세요.", "", "");
+    editor.focus();
+    return false;
   }
 
-  if (window.MathJax?.typesetPromise) {
-    await window.MathJax.typesetPromise([answerText]);
+  input.value = expression;
+  return true;
+}
+
+localFromEditor.addEventListener("click", () => {
+  if (copyEditorToRight()) {
+    calcForm.requestSubmit();
   }
+});
+
+aiFromEditor.addEventListener("click", () => {
+  if (copyEditorToRight()) {
+    aiButton.click();
+  }
+});
+
+function renderMath() {
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    return window.MathJax.typesetPromise([answerText]);
+  }
+
+  return Promise.resolve();
 }
 
 aiButton.addEventListener("click", async function() {
   const question = input.value.trim();
 
   if (!question) {
-    statusText.textContent = "질문을 입력해 주세요.";
-    formulaText.textContent = "";
-    answerText.textContent = "";
+    setResultStatus("질문을 입력해 주세요.");
     input.focus();
     return;
   }
 
   aiButton.disabled = true;
+  aiFromEditor.disabled = true;
   aiButton.textContent = "AI가 풀이 중...";
-  statusText.textContent = "AI에 질문을 보내고 있습니다.";
-  formulaText.textContent = "";
-  answerText.textContent = "";
+  setResultStatus("AI에 질문을 보내고 있습니다.");
 
   try {
     const response = await fetch(AI_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question })
+      body: JSON.stringify({question})
     });
 
     const data = await response.json().catch(() => ({}));
@@ -456,30 +915,37 @@ aiButton.addEventListener("click", async function() {
       throw new Error("AI가 답변을 반환하지 않았습니다.");
     }
 
-    statusText.textContent = "AI 풀이 완료";
-    formulaText.textContent = "질문: " + question;
-
-    // HTML로 실행하지 않고 텍스트로 넣어 안전성을 유지합니다.
-    // MathJax가 그 안의 LaTeX 수식을 렌더링합니다.
-    if (window.MathJax?.typesetClear) {
+    if (window.MathJax && window.MathJax.typesetClear) {
       window.MathJax.typesetClear([answerText]);
     }
 
+    statusText.textContent = "AI 풀이 완료";
+    formulaText.textContent = "질문: " + question;
     answerText.textContent = data.answer;
-    await typesetAnswer();
+
+    await renderMath();
 
   } catch (error) {
-    statusText.textContent = "AI 요청 실패";
-    formulaText.textContent = "";
-    answerText.textContent =
+    if (window.MathJax && window.MathJax.typesetClear) {
+      window.MathJax.typesetClear([answerText]);
+    }
+
+    setResultStatus(
+      "AI 요청 실패",
+      "",
       error.name === "TypeError"
-        ? "서버 연결을 확인해 주세요."
-        : error.message;
+        ? "서버에 연결하지 못했습니다. Worker 주소와 배포 상태를 확인해 주세요."
+        : error.message
+    );
   } finally {
     aiButton.disabled = false;
+    aiFromEditor.disabled = false;
     aiButton.textContent = "AI로 공학 문제 풀이";
   }
 });
+
+// 기본 키패드 표시
+renderKeys("main");
 </script>
 </body>
 </html>
