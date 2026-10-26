@@ -271,21 +271,23 @@ function koreanNumberToArabic(word) {
   return String(total + section + current);
 }
 
+
 function normalizeExpression(raw) {
   let s = raw.trim().toLowerCase();
 
-  if (s.length > 300) throw new Error("수식은 300자 이하로 입력해 주세요.");
+  if (s.length > 300) {
+    throw new Error("수식은 300자 이하로 입력해 주세요.");
+  }
 
-  // 한글 변수명
-  s = s.replace(/엑스/g, "x");
-
-  s = s.replace(/×/g, "*")
+  // 한글 변수와 기호 변환
+  s = s.replace(/엑스/g, "x")
+       .replace(/×/g, "*")
        .replace(/÷/g, "/")
        .replace(/[−–]/g, "-")
        .replace(/²/g, "^2")
        .replace(/³/g, "^3");
 
-  // 연산어 변환: 공백이 없어도 작동
+  // 연산어 변환
   s = s.replace(/더하기/g, "+")
        .replace(/곱하기/g, "*")
        .replace(/나누기/g, "/")
@@ -293,18 +295,8 @@ function normalizeExpression(raw) {
        .replace(/플러스/g, "+")
        .replace(/마이너스/g, "-");
 
-  // 한글 숫자를 연산자 경계에서 숫자로 변환
-  const numberWords = "영공일이삼사오육칠팔구십백천";
-  const numberPattern = new RegExp(
-    `([${numberWords}]+)(?=\\s|[+*/^()=\\-]|$|의)`,
-    "g"
-  );
-  s = s.replace(numberPattern, word => koreanNumberToArabic(word));
-
-  // 제곱 표현 및 한글 함수
-  s = s.replace(/의\s*세제곱/g, "^3")
-       .replace(/의\s*제곱/g, "^2")
-       .replace(/세제곱/g, "^3")
+  // 제곱 표현을 먼저 변환
+  s = s.replace(/세제곱/g, "^3")
        .replace(/제곱근/g, "sqrt")
        .replace(/제곱/g, "^2")
        .replace(/루트/g, "sqrt")
@@ -315,20 +307,26 @@ function normalizeExpression(raw) {
        .replace(/로그/g, "log")
        .replace(/파이/g, "pi");
 
-  s = s.replace(/은/g, "=").replace(/는/g, "=");
+  // 등호 표현
+  s = s.replace(/은/g, "=")
+       .replace(/는/g, "=");
 
-  // 함수에 괄호가 없는 입력 지원: sin 30 -> sin(30)
-  s = s.replace(
-    /\b(sqrt|sin|cos|tan|asin|acos|atan|log|ln|abs|floor|ceil|round)\s+([+-]?\d+(?:\.\d+)?)/g,
-    "$1($2)"
+  // 공백 없는 한글 숫자 변환
+  const numberWords = "영공일이삼사오육칠팔구십백천";
+  const pattern = new RegExp(
+    "[" + numberWords + "]+(?=$|[+*/^()=\\-\\s])",
+    "g"
   );
 
-  // 곱셈 기호 생략 지원
+  s = s.replace(pattern, word => koreanNumberToArabic(word));
+
+  // 숫자와 변수 사이의 곱셈
   s = s.replace(/(\d)(x|pi|e|\()/g, "$1*$2")
        .replace(/(x|pi|\))(\d|x|pi|\()/g, "$1*$2");
 
   return s.trim();
 }
+
 
 function gcd(a, b) {
   a = Math.abs(Math.round(a));
@@ -349,12 +347,18 @@ function simplifySqrt(n) {
   return {inside, outside};
 }
 
+
 function solveEquation(expr) {
   if ((expr.match(/=/g) || []).length !== 1) {
     throw new Error("등호 하나로 방정식을 입력해 주세요.");
   }
 
   const [left, right] = expr.split("=").map(s => s.trim());
+
+  if (!left || !right) {
+    throw new Error("등호 양쪽에 식을 입력해 주세요.");
+  }
+
   const residual = `(${left})-(${right})`;
 
   const names = [...new Set(
@@ -367,131 +371,39 @@ function solveEquation(expr) {
 
   const variable = names[0];
 
-  // 다항식 계수 추출 후 1차/2차 방정식을 직접 풉니다.
-  let coeffs = null;
+  // Nerdamer 1.1.13의 방정식 풀이 API 사용
+  if (typeof nerdamer.solveEquations !== "function") {
+    throw new Error("Solve.js를 불러오지 못했습니다. 새로고침해 주세요.");
+  }
+
+  let roots;
+
   try {
-    const vector = nerdamer.coeffs(
-      nerdamer(residual).expand().toString(), variable
-    );
-    coeffs = [];
-    vector.each((item, index) => {
-      coeffs[index] = Number(
-        nerdamer(String(item)).evaluate().text("decimals")
-      );
-    });
-  } catch (_) {}
-
-  if (coeffs && coeffs.length <= 3) {
-    while (coeffs.length > 1 && Math.abs(coeffs.at(-1)) < 1e-10) {
-      coeffs.pop();
-    }
-
-    if (coeffs.length === 1) {
-      return {
-        answer: Math.abs(coeffs[0]) < 1e-10
-          ? "항등식입니다."
-          : "해가 없습니다."
-      };
-    }
-
-    if (coeffs.length === 2) {
-      return {
-        answer: `\\[${variable} = ${formatNumber(-coeffs[0]/coeffs[1])}\\]`
-      };
-    }
-
-    if (coeffs.length === 3) {
-      const [c, b, a] = coeffs;
-      const D = b*b - 4*a*c;
-      const den = 2*a;
-
-      if (D < -1e-10) {
-        const re = -b/den;
-        const im = Math.sqrt(-D)/Math.abs(den);
-
-        if (Math.abs(re) < 1e-10) {
-          return {
-            answer: `복소수 해:\n\\[${variable} = \\pm ${formatNumber(im)}i\\]`
-          };
-        }
-
-        return {
-          answer:
-            `복소수 해:\n\\[${variable} = ${formatNumber(re)}+${formatNumber(im)}i\\]\n` +
-            `\\[${variable} = ${formatNumber(re)}-${formatNumber(im)}i\\]`
-        };
-      }
-
-      if (Math.abs(D) < 1e-10) {
-        return {
-          answer: `\\[${variable} = ${formatNumber(-b/den)}\\]`
-        };
-      }
-
-      const roots = [
-        (-b + Math.sqrt(D))/den,
-        (-b - Math.sqrt(D))/den
-      ];
-
-      if ([a,b,c,D].every(n => Math.abs(n-Math.round(n)) < 1e-8)) {
-        const ai = Math.round(a);
-        const bi = Math.round(b);
-        const di = Math.round(D);
-        const sd = Math.round(Math.sqrt(di));
-
-        if (sd*sd !== di) {
-          const r = simplifySqrt(di);
-          let base = -bi;
-          let factor = r.outside;
-          let denominator = 2*ai;
-
-          if (denominator < 0) {
-            base = -base;
-            denominator = -denominator;
-          }
-
-          const common = gcd(gcd(base, factor), denominator);
-          base /= common;
-          factor /= common;
-          denominator /= common;
-
-          const radical = (factor === 1 ? "" : factor) + `\\sqrt{${r.inside}}`;
-          const numerator = base === 0
-            ? `\\pm ${radical}`
-            : `${base < 0 ? "-" : ""}${Math.abs(base)} \\pm ${radical}`;
-
-          const exact = denominator === 1
-            ? numerator
-            : `\\frac{${numerator}}{${denominator}}`;
-
-          return {
-            answer:
-              `정확한 해:\n\\[${variable} = ${exact}\\]\n\n` +
-              `소수 근삿값:\n` +
-              roots.map(x => `\\[${variable} \\approx ${formatNumber(x)}\\]`).join("\n")
-          };
-        }
-      }
-
-      return {
-        answer: roots.map(x => `\\[${variable} = ${formatNumber(x)}\\]`).join("\n")
-      };
-    }
+    roots = nerdamer.solveEquations(residual, variable);
+  } catch (error) {
+    throw new Error("방정식을 풀 수 없습니다. 식을 확인해 주세요.");
   }
 
-  // Nerdamer 버전마다 solve API가 다르므로 없는 함수를 호출하지 않습니다.
-  // 고차 방정식은 지원되는 solveEquations API가 있을 때만 시도합니다.
-  if (typeof nerdamer.solveEquations === "function") {
-    try {
-      const result = nerdamer.solveEquations(`${left}=${right}`, [variable]);
-      if (result !== undefined && result !== null && String(result) !== "[]") {
-        return {answer: "해:\n" + String(result)};
+  const solutions = Array.from(roots || [])
+    .map(root => {
+      if (root && typeof root.text === "function") {
+        return root.text();
       }
-    } catch (_) {}
+      return String(root);
+    })
+    .filter(root => root && root !== "undefined");
+
+  if (!solutions.length) {
+    throw new Error("해를 찾지 못했습니다.");
   }
 
-  throw new Error("현재는 일차·이차 방정식 풀이를 지원합니다.");
+  return {
+    answer: "해:\n" + solutions.map(root =>
+      `\\[${variable} = ${nerdamer(root).toTeX()}\\]`
+    ).join("\n")
+  };
 }
+
 
 function prepareTrig(expr) {
   if (angleMode === "rad") return expr;
