@@ -45,8 +45,8 @@ body {
   border-radius: 18px;
   background: white;
 }
-h1 { font-size: 23px; margin: 0 0 8px; }
-.subtitle { color: #64748b; font-size: 13px; line-height: 1.7; }
+h1 { font-size: 23px; margin: 0 0 18px; }
+button { cursor: pointer; font: inherit; }
 .screen {
   min-height: 125px;
   padding: 12px;
@@ -77,7 +77,6 @@ h1 { font-size: 23px; margin: 0 0 8px; }
   align-items: center;
   margin: 15px 0;
 }
-button { cursor: pointer; font: inherit; }
 .mode {
   border: 0;
   border-radius: 8px;
@@ -130,58 +129,48 @@ button { cursor: pointer; font: inherit; }
   color: #475569;
   font-size: 12px;
 }
-.latest {
-  margin-top: 16px;
-  padding: 15px;
-  min-height: 150px;
-  border: 1px solid #d6e2f4;
-  border-radius: 12px;
-  background: #f8fbff;
-  overflow: visible;
-}
-.latest-label, .history-expression {
-  font-size: 12px;
-  color: #64748b;
-  margin-bottom: 10px;
-}
-.latest-expression { overflow-wrap: anywhere; }
-.latest-answer, .history-answer {
-  line-height: 1.9;
-  font-size: 15px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  padding: 4px 0 10px;
-  overflow: visible;
-}
 .history-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 16px;
-  max-height: 470px;
+  max-height: 650px;
   overflow-y: auto;
   padding: 2px 5px 8px 0;
 }
 .history-item {
-  padding: 12px;
+  padding: 14px;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   background: white;
   cursor: pointer;
 }
 .history-item:hover { background: #f8fbff; }
-.empty {
-  padding: 30px 10px;
-  color: #94a3b8;
-  text-align: center;
+.history-expression {
   font-size: 14px;
+  color: #64748b;
+  margin-bottom: 8px;
+  overflow-wrap: anywhere;
 }
-.help { margin-top: 14px; font-size: 12px; color: #64748b; line-height: 1.8; }
+.history-answer {
+  line-height: 1.9;
+  font-size: 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 4px 0 8px;
+  overflow: visible;
+}
 mjx-container { max-width: 100% !important; }
 mjx-container[display="true"] {
   margin: .6em 0 !important;
   padding: .2em 0 .35em;
   overflow: visible !important;
+}
+.empty {
+  padding: 30px 10px;
+  color: #94a3b8;
+  text-align: center;
+  font-size: 14px;
 }
 @media(max-width: 900px) {
   body { padding: 10px; }
@@ -200,12 +189,10 @@ mjx-container[display="true"] {
 <div class="app">
   <section class="panel">
     <h1>공학용 계산기</h1>
-    <p class="subtitle">수식을 입력하거나 키패드를 사용하세요.</p>
 
     <div class="screen">
-      <input id="display" autocomplete="off"
-        placeholder="예: 이 더하기 삼, x²+4는 16">
-      <div id="screenResult">계산 결과가 여기에 표시됩니다.</div>
+      <input id="display" autocomplete="off" placeholder="수식 입력">
+      <div id="screenResult"></div>
     </div>
 
     <div class="mode-row">
@@ -217,11 +204,6 @@ mjx-container[display="true"] {
     </div>
 
     <div class="keypad" id="keypad"></div>
-
-    <div class="help">
-      한글 숫자와 일반 숫자를 모두 지원합니다.<br>
-      예: 이 더하기 삼, 십 곱하기 삼, 오의 제곱, x세제곱은 8
-    </div>
   </section>
 
   <section class="panel">
@@ -230,18 +212,8 @@ mjx-container[display="true"] {
       <button class="clear-history" id="clearHistory">기록 지우기</button>
     </div>
 
-    <div class="latest">
-      <div class="latest-label">최근 계산 결과</div>
-      <div class="latest-expression" id="latestExpression">
-        계산 결과가 여기에 표시됩니다.
-      </div>
-      <div class="latest-answer" id="latestAnswer">
-        왼쪽에서 계산을 시작하세요.
-      </div>
-    </div>
-
     <div class="history-list" id="historyList">
-      <div class="empty">계산 기록이 여기에 표시됩니다. (최대 10개)</div>
+      <div class="empty">계산 기록이 여기에 표시됩니다.</div>
     </div>
   </section>
 </div>
@@ -251,8 +223,6 @@ mjx-container[display="true"] {
 
 const display = document.getElementById("display");
 const screenResult = document.getElementById("screenResult");
-const latestExpression = document.getElementById("latestExpression");
-const latestAnswer = document.getElementById("latestAnswer");
 const historyList = document.getElementById("historyList");
 const keypad = document.getElementById("keypad");
 const memoryStatus = document.getElementById("memoryStatus");
@@ -262,13 +232,19 @@ let memoryValue = null;
 let lastAnswer = 0;
 let history = [];
 
+const functions = [
+  "sqrt", "nthroot", "sin", "cos", "tan",
+  "asin", "acos", "atan", "log", "ln",
+  "abs", "floor", "ceil", "round", "factorial",
+  "exp", "pi", "e"
+];
+
 function formatNumber(n) {
   if (!Number.isFinite(n)) throw new Error("유효하지 않은 계산 결과입니다.");
   if (Math.abs(n) < 1e-12) return "0";
   return Number(n.toPrecision(10)).toString();
 }
 
-// 한글 숫자 변환
 function koreanNumberToArabic(word) {
   const digits = {
     "영":0, "공":0, "일":1, "이":2, "삼":3,
@@ -276,14 +252,20 @@ function koreanNumberToArabic(word) {
   };
   const units = {"십":10, "백":100, "천":1000};
 
-  // 숫자 이름에 단위가 없으면 각 글자를 숫자로 읽습니다.
+  // 일, 이, 삼처럼 단일 숫자는 숫자 하나로 변환
+  if (word.length === 1 && digits[word] !== undefined) {
+    return String(digits[word]);
+  }
+
+  // 단위가 없는 한글 숫자열: 이삼 -> 23
   if (![..."십백천"].some(ch => word.includes(ch))) {
     return [...word].map(ch => digits[ch]).join("");
   }
 
+  // 십, 백, 천 단위의 수
   let total = 0;
-  let current = 0;
   let section = 0;
+  let current = 0;
 
   for (const ch of word) {
     if (digits[ch] !== undefined) {
@@ -305,72 +287,52 @@ function koreanNumberToArabic(word) {
 function normalizeExpression(raw) {
   let s = raw.trim().toLowerCase();
 
-  if (s.length > 300) {
-    throw new Error("수식은 300자 이하로 입력해 주세요.");
-  }
+  if (s.length > 300) throw new Error("수식은 300자 이하로 입력해 주세요.");
 
-  s = s
-    .replace(/×/g, "*")
-    .replace(/÷/g, "/")
-    .replace(/[−–]/g, "-")
-    .replace(/²/g, "^2")
-    .replace(/³/g, "^3");
+  s = s.replace(/×/g, "*")
+       .replace(/÷/g, "/")
+       .replace(/[−–]/g, "-")
+       .replace(/²/g, "^2")
+       .replace(/³/g, "^3");
 
-  // 한글 숫자를 먼저 처리합니다.
-  // 한글 단어 내부의 글자나 x 같은 미지수는 변환하지 않습니다.
-  const numberWords = "[영공일이삼사오육칠팔구십백천]+";
-  const operationWords =
-    "더하기|빼기|곱하기|나누기|의|제곱|세제곱|은|는";
+  // 자연어 연산어를 먼저 표준 연산자로 치환합니다.
+  s = s.replace(/더하기/g, "+")
+       .replace(/곱하기/g, "*")
+       .replace(/나누기/g, "/")
+       .replace(/빼기/g, "-")
+       .replace(/플러스/g, "+")
+       .replace(/마이너스/g, "-");
 
+  // "이더하기삼"처럼 공백이 없어도 연산어 경계에서 숫자를 변환합니다.
+  // x, sin 등의 영문 변수와 함수 이름은 그대로 보존합니다.
+  const numberWords = "영공일이삼사오육칠팔구십백천";
   const numberPattern = new RegExp(
-    `(^|[\\s(])(${numberWords})(?=\\s*(?:${operationWords}|[=+*/^()\\-]|$))`,
+    `([${numberWords}]+)(?=(?:\\s|[+*/^()=\\-]|$|의|제곱|세제곱))`,
     "g"
   );
 
-  s = s.replace(numberPattern, (whole, prefix, word) => {
-    return prefix + koreanNumberToArabic(word);
-  });
+  s = s.replace(numberPattern, word => koreanNumberToArabic(word));
 
-  // 표현식에 사용되는 한글 연산어
-  const replacements = [
-    [/계산해\s*주세요/g, ""],
-    [/계산해줘/g, ""],
-    [/구해\s*주세요/g, ""],
-    [/구해줘/g, ""],
-    [/풀어\s*주세요/g, ""],
-    [/풀어줘/g, ""],
-    [/제곱근/g, "sqrt"],
-    [/자연로그/g, "ln"],
-    [/코사인/g, "cos"],
-    [/탄젠트/g, "tan"],
-    [/사인/g, "sin"],
-    [/루트/g, "sqrt"],
-    [/로그/g, "log"],
-    [/파이/g, "pi"],
-    [/더하기/g, "+"],
-    [/곱하기/g, "*"],
-    [/나누기/g, "/"],
-    [/빼기/g, "-"],
-    [/플러스/g, "+"],
-    [/마이너스/g, "-"],
-    [/세제곱/g, "^3"],
-    [/제곱/g, "^2"]
-  ];
+  // 제곱 표현 처리
+  s = s.replace(/세제곱/g, "^3")
+       .replace(/제곱근/g, "sqrt")
+       .replace(/제곱/g, "^2")
+       .replace(/루트/g, "sqrt")
+       .replace(/자연로그/g, "ln")
+       .replace(/코사인/g, "cos")
+       .replace(/탄젠트/g, "tan")
+       .replace(/사인/g, "sin")
+       .replace(/로그/g, "log")
+       .replace(/파이/g, "pi");
 
-  for (const [pattern, replacement] of replacements) {
-    s = s.replace(pattern, replacement);
-  }
-
-  // "은", "는"을 등호로 취급합니다.
-  s = s.replace(/은/g, "=").replace(/는/g, "=");
-
-  // "2의3제곱"과 "x의2제곱"을 지원합니다.
+  // "2의3제곱", "오의 제곱" 등
   s = s.replace(
-    /([0-9a-zA-Z_]+)\s*의\s*([0-9]+)\s*제곱/g,
+    /([0-9]+)\s*의\s*([0-9]+)\s*제곱/g,
     "($1^$2)"
   );
 
-  // 공백으로 입력한 함수 인자
+  s = s.replace(/은/g, "=").replace(/는/g, "=");
+
   s = s.replace(
     /\b(sqrt|sin|cos|tan|asin|acos|atan|log|ln|abs|floor|ceil|round)\s+([+-]?\d+(?:\.\d+)?)/g,
     "$1($2)"
@@ -386,7 +348,7 @@ function gcd(a, b) {
   return a || 1;
 }
 
-function simplifiedRoot(n) {
+function simplifySqrt(n) {
   let inside = Math.round(n);
   let outside = 1;
 
@@ -410,32 +372,24 @@ function solveEquation(expr) {
 
   const names = [...new Set(
     (left + " " + right).match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || []
-  )].filter(name => ![
-    "sqrt", "sin", "cos", "tan", "asin", "acos", "atan",
-    "log", "ln", "abs", "floor", "ceil", "round", "pi", "e"
-  ].includes(name));
+  )].filter(name => !functions.includes(name));
 
-  if (names.length !== 1) {
-    throw new Error("현재는 미지수 하나인 방정식을 지원합니다.");
-  }
+  if (names.length !== 1) throw new Error("미지수 하나인 방정식만 지원합니다.");
 
   const variable = names[0];
+  let coeffs = null;
 
-  let coeffs;
   try {
     const vector = nerdamer.coeffs(
       nerdamer(residual).expand().toString(), variable
     );
-
     coeffs = [];
     vector.each((item, index) => {
       coeffs[index] = Number(
         nerdamer(String(item)).evaluate().text("decimals")
       );
     });
-  } catch {
-    coeffs = null;
-  }
+  } catch {}
 
   if (coeffs && coeffs.length <= 3) {
     while (coeffs.length > 1 && Math.abs(coeffs.at(-1)) < 1e-10) {
@@ -451,129 +405,96 @@ function solveEquation(expr) {
     }
 
     if (coeffs.length === 2) {
-      const root = -coeffs[0] / coeffs[1];
       return {
-        answer: `실수 해:\n\\[${variable} = ${formatNumber(root)}\\]`
+        answer: `\\[${variable} = ${formatNumber(-coeffs[0]/coeffs[1])}\\]`
       };
     }
 
     if (coeffs.length === 3) {
       const [c, b, a] = coeffs;
       const D = b*b - 4*a*c;
-      const denominator = 2*a;
+      const den = 2*a;
 
       if (D < -1e-10) {
-        const real = -b / denominator;
-        const imag = Math.sqrt(-D) / Math.abs(denominator);
+        const re = -b/den;
+        const im = Math.sqrt(-D)/Math.abs(den);
 
-        if (Math.abs(real) < 1e-10) {
+        if (Math.abs(re) < 1e-10) {
           return {
-            answer:
-              `복소수 해:\n\\[${variable} = \\pm ${formatNumber(imag)}i\\]`
+            answer: `복소수 해:\n\\[${variable} = \\pm ${formatNumber(im)}i\\]`
           };
         }
 
         return {
           answer:
-            `복소수 해:\n` +
-            `\\[${variable} = ${formatNumber(real)}+${formatNumber(imag)}i\\]\n` +
-            `\\[${variable} = ${formatNumber(real)}-${formatNumber(imag)}i\\]`
+            `복소수 해:\n\\[${variable} = ${formatNumber(re)}+${formatNumber(im)}i\\]\n` +
+            `\\[${variable} = ${formatNumber(re)}-${formatNumber(im)}i\\]`
         };
       }
 
       if (Math.abs(D) < 1e-10) {
         return {
-          answer: `실수 해:\n\\[${variable} = ${formatNumber(-b/denominator)}\\]`
+          answer: `\\[${variable} = ${formatNumber(-b/den)}\\]`
         };
       }
 
-      const sqrtD = Math.sqrt(D);
-      const x1 = (-b + sqrtD) / denominator;
-      const x2 = (-b - sqrtD) / denominator;
-      const roots = Math.abs(x1-x2) < 1e-10 ? [x1] : [x1,x2];
+      const roots = [
+        (-b + Math.sqrt(D))/den,
+        (-b - Math.sqrt(D))/den
+      ];
 
-      // 정수 계수와 정수 판별식일 때 근호를 단순화합니다.
-      const integerCoeffs = [a,b,c,D].every(
-        n => Math.abs(n-Math.round(n)) < 1e-8
-      );
-
-      if (integerCoeffs) {
+      if ([a,b,c,D].every(n => Math.abs(n-Math.round(n)) < 1e-8)) {
         const ai = Math.round(a);
         const bi = Math.round(b);
         const di = Math.round(D);
         const sd = Math.round(Math.sqrt(di));
 
-        if (sd*sd === di) {
+        if (sd*sd !== di) {
+          const r = simplifySqrt(di);
+          let base = -bi;
+          let factor = r.outside;
+          let denominator = 2*ai;
+
+          if (denominator < 0) {
+            base = -base;
+            denominator = -denominator;
+          }
+
+          const common = gcd(gcd(base, factor), denominator);
+          base /= common;
+          factor /= common;
+          denominator /= common;
+
+          const radical = (factor === 1 ? "" : factor) + `\\sqrt{${r.inside}}`;
+          const numerator = base === 0
+            ? `\\pm ${radical}`
+            : `${base < 0 ? "-" : ""}${Math.abs(base)} \\pm ${radical}`;
+
+          const exact = denominator === 1
+            ? numerator
+            : `\\frac{${numerator}}{${denominator}}`;
+
           return {
-            answer: "실수 해:\n" + roots.map(x =>
-              `\\[${variable} = ${formatNumber(x)}\\]`
-            ).join("\n")
+            answer:
+              `정확한 해:\n\\[${variable} = ${exact}\\]\n\n` +
+              `소수 근삿값:\n` +
+              roots.map(x => `\\[${variable} \\approx ${formatNumber(x)}\\]`).join("\n")
           };
         }
-
-        const r = simplifiedRoot(di);
-        let num = -bi;
-        let radicalCoefficient = r.outside;
-        let den = 2*ai;
-
-        if (den < 0) {
-          num = -num;
-          den = -den;
-        }
-
-        const common = gcd(gcd(num, radicalCoefficient), den);
-        num /= common;
-        radicalCoefficient /= common;
-        den /= common;
-
-        const radical =
-          (radicalCoefficient === 1 ? "" : radicalCoefficient) +
-          `\\sqrt{${r.inside}}`;
-
-        let numerator;
-        if (num === 0) {
-          numerator = `\\pm ${radical}`;
-        } else {
-          numerator =
-            `${num < 0 ? "-" : ""}${Math.abs(num)} \\pm ${radical}`;
-        }
-
-        const exact = den === 1
-          ? numerator
-          : `\\frac{${numerator}}{${den}}`;
-
-        return {
-          answer:
-            `정확한 해:\n\\[${variable} = ${exact}\\]\n\n` +
-            `소수 근삿값:\n` +
-            roots.map(x =>
-              `\\[${variable} \\approx ${formatNumber(x)}\\]`
-            ).join("\n")
-        };
       }
 
       return {
-        answer: "실수 해:\n" + roots.map(x =>
-          `\\[${variable} \\approx ${formatNumber(x)}\\]`
-        ).join("\n")
+        answer: roots.map(x => `\\[${variable} = ${formatNumber(x)}\\]`).join("\n")
       };
     }
   }
 
-  // 3차 이상은 기호 계산 엔진으로 풀이합니다.
   const solution = nerdamer.solve(residual, variable).toString();
-  const roots = solution
-    .replace(/^\[/, "")
-    .replace(/\]$/, "")
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
-
-  if (!roots.length) throw new Error("해를 구하지 못했습니다.");
+  const roots = solution.replace(/^\[/, "").replace(/\]$/, "").split(",");
 
   return {
     answer: "해:\n" + roots.map(root =>
-      `\\[${variable} = ${nerdamer(root).toTeX()}\\]`
+      `\\[${variable} = ${nerdamer(root.trim()).toTeX()}\\]`
     ).join("\n")
   };
 }
@@ -581,19 +502,16 @@ function solveEquation(expr) {
 function prepareTrig(expr) {
   if (angleMode === "rad") return expr;
 
-  return expr.replace(/\b(sin|cos|tan)\(([^()]*)\)/g,
-    (whole, fn, arg) => {
-      if (/^[0-9.+\-*/\s]+$/.test(arg)) {
-        return `${fn}((${arg})*pi/180)`;
-      }
-      return whole;
+  return expr.replace(/\b(sin|cos|tan)\(([^()]*)\)/g, (whole, fn, arg) => {
+    if (/^[0-9.+\-*/\s]+$/.test(arg)) {
+      return `${fn}((${arg})*pi/180)`;
     }
-  );
+    return whole;
+  });
 }
 
 function calculate(raw) {
   const expr = normalizeExpression(raw);
-
   if (!expr) throw new Error("수식을 입력해 주세요.");
 
   if (expr.includes("=")) {
@@ -601,16 +519,21 @@ function calculate(raw) {
   }
 
   if (!/^[0-9a-zA-Z_+\-*/^().,\s]+$/.test(expr)) {
-    throw new Error("지원하지 않는 문자가 포함되어 있습니다.");
+    throw new Error("지원하지 않는 문자가 있습니다.");
+  }
+
+  const identifiers = expr.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
+  const unknown = identifiers.filter(n => !functions.includes(n));
+
+  if (unknown.length) {
+    throw new Error("숫자 계산에 변수가 포함되어 있습니다.");
   }
 
   const value = Number(
     nerdamer(prepareTrig(expr)).evaluate().text("decimals")
   );
 
-  if (!Number.isFinite(value)) {
-    throw new Error("계산할 수 없는 수식입니다.");
-  }
+  if (!Number.isFinite(value)) throw new Error("계산할 수 없는 수식입니다.");
 
   return {
     expr,
@@ -621,7 +544,6 @@ function calculate(raw) {
 
 async function typeset(element) {
   if (!window.MathJax?.typesetPromise) return;
-
   try {
     MathJax.typesetClear?.([element]);
     await MathJax.typesetPromise([element]);
@@ -656,8 +578,7 @@ function addHistory(expr, answer) {
   }
 
   if (!history.length) {
-    historyList.innerHTML =
-      '<div class="empty">계산 기록이 없습니다.</div>';
+    historyList.innerHTML = '<div class="empty">계산 기록이 없습니다.</div>';
   }
 }
 
@@ -666,22 +587,17 @@ function calculateCurrent() {
 
   try {
     const result = calculate(raw);
-    const answer = result.answer;
 
-    if (result.value !== undefined) lastAnswer = result.value;
+    if (result.value !== undefined) {
+      lastAnswer = result.value;
+      screenResult.textContent = formatNumber(result.value);
+    } else {
+      screenResult.textContent = "계산 완료";
+    }
 
-    latestExpression.textContent = result.expr;
-    latestAnswer.textContent = answer;
-    screenResult.textContent = result.value !== undefined
-      ? formatNumber(result.value)
-      : "계산 완료";
-
-    addHistory(result.expr, answer);
-    typeset(latestAnswer);
+    addHistory(result.expr, result.answer);
   } catch (error) {
-    latestExpression.textContent = raw;
-    latestAnswer.textContent = error.message || "계산 오류";
-    screenResult.textContent = "계산 오류";
+    screenResult.textContent = error.message || "계산 오류";
     addHistory(raw, error.message || "계산 오류");
   }
 }
@@ -691,6 +607,18 @@ function insertText(text) {
   const end = display.selectionEnd ?? display.value.length;
   display.setRangeText(text, start, end, "end");
   display.focus();
+}
+
+function changeMemory(direction) {
+  try {
+    const result = calculate(display.value);
+    if (result.value === undefined) throw new Error("숫자 계산에만 사용할 수 있습니다.");
+
+    memoryValue = (memoryValue || 0) + direction * result.value;
+    memoryStatus.textContent = "M: " + formatNumber(memoryValue);
+  } catch (error) {
+    screenResult.textContent = error.message;
+  }
 }
 
 const keys = [
@@ -730,7 +658,7 @@ for (const [label, value, cls] of keys) {
 
     if (value === "AC") {
       display.value = "";
-      screenResult.textContent = "0";
+      screenResult.textContent = "";
       display.focus();
       return;
     }
@@ -739,11 +667,8 @@ for (const [label, value, cls] of keys) {
       const start = display.selectionStart;
       const end = display.selectionEnd;
 
-      if (start !== end) {
-        display.setRangeText("", start, end, "end");
-      } else if (start > 0) {
-        display.setRangeText("", start - 1, end, "end");
-      }
+      if (start !== end) display.setRangeText("", start, end, "end");
+      else if (start > 0) display.setRangeText("", start-1, end, "end");
 
       display.focus();
       return;
@@ -751,14 +676,13 @@ for (const [label, value, cls] of keys) {
 
     if (value === "±") {
       display.value = display.value.startsWith("-(")
-        ? display.value.slice(2, -1)
+        ? display.value.slice(2,-1)
         : `-(${display.value})`;
       display.focus();
       return;
     }
 
     if (value === "Ans") return insertText(String(lastAnswer));
-
     if (value === "M+") return changeMemory(1);
     if (value === "M-") return changeMemory(-1);
 
@@ -771,20 +695,6 @@ for (const [label, value, cls] of keys) {
   });
 
   keypad.appendChild(button);
-}
-
-function changeMemory(sign) {
-  try {
-    const result = calculate(display.value);
-    if (result.value === undefined) {
-      throw new Error("메모리 기능은 숫자 계산에 사용하세요.");
-    }
-
-    memoryValue = (memoryValue || 0) + sign * result.value;
-    memoryStatus.textContent = "M: " + formatNumber(memoryValue);
-  } catch (error) {
-    screenResult.textContent = error.message;
-  }
 }
 
 document.getElementById("degButton").onclick = () => {
@@ -801,8 +711,7 @@ document.getElementById("radButton").onclick = () => {
 
 document.getElementById("clearHistory").onclick = () => {
   history = [];
-  historyList.innerHTML =
-    '<div class="empty">계산 기록이 없습니다.</div>';
+  historyList.innerHTML = '<div class="empty">계산 기록이 없습니다.</div>';
 };
 
 display.addEventListener("keydown", event => {
